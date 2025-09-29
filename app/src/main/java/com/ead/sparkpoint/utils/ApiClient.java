@@ -7,11 +7,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://100.114.75.113/SparkPoint/api/";
 
     // Common method to handle connections
     private static String sendRequest(String endpoint, String method, String jsonInput, String token) throws Exception {
-        URL url = new URL(BASE_URL + endpoint);
+        URL url = new URL(Constants.BASE_URL + endpoint);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod(method);
         conn.setRequestProperty("Accept", "application/json");
