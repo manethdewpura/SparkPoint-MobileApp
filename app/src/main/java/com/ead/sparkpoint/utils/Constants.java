@@ -1,6 +1,13 @@
 package com.ead.sparkpoint.utils;
 
 public class Constants {
+
+    // Auth & Users
+    public static final String LOGIN_URL = "/auth/login";
+    public static final String REGISTER_EV_OWNER_URL = "/evowners/register";
+    public static final String UPDATE_EV_OWNER_URL = "/evowners/update";
+
+
     public static final String BASE_URL = "http://100.114.75.113/SparkPoint/api";
     public static final String GET_BOOKINGS_URL = "/bookings";
     public static final String UPCOMING_BOOKINGS_URL = "/bookings?status=Confirmed";
