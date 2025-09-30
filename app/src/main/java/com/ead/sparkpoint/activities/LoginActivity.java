@@ -57,7 +57,16 @@ public class LoginActivity extends AppCompatActivity {
                 String response = ApiClient.postRequest(Constants.LOGIN_URL, req.toString(), null);
 
                 JSONObject res = new JSONObject(response);
-// In LoginActivity's loginUser() method:
+
+                // ✅ Check if backend only sent a message (e.g., deactivated account)
+                if (res.has("message")) {
+                    String msg = res.getString("message");
+                    runOnUiThread(() ->
+                            Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show()
+                    );
+                    return; // ⛔ Stop here, don't try to parse "user"
+                }
+
                 JSONObject userJson = res.getJSONObject("user");
 
                 AppUser appUser = new AppUser(

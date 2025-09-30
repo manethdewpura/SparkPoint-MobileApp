@@ -15,6 +15,9 @@ import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
 
 import org.json.JSONObject;
+import android.app.AlertDialog;
+import android.content.Intent;
+
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -37,6 +40,10 @@ public class ProfileActivity extends AppCompatActivity {
         etPhone = findViewById(R.id.etPhone);
         btnEdit = findViewById(R.id.btnEdit);
         btnSave = findViewById(R.id.btnSave);
+
+        Button btnDeactivate = findViewById(R.id.btnDeactivate);
+        btnDeactivate.setOnClickListener(v -> showDeactivateDialog());
+
 
         appUserDAO = new AppUserDAO(this);
         appUser = appUserDAO.getUser(); // load from local db
@@ -125,5 +132,59 @@ public class ProfileActivity extends AppCompatActivity {
             }
         }).start();
     }
+
+    private void showDeactivateDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Deactivate Account");
+        builder.setMessage("Are you sure you want to deactivate this account? Please enter your NIC to confirm.");
+
+        final EditText input = new EditText(this);
+        input.setHint("Enter NIC");
+        builder.setView(input);
+
+        builder.setPositiveButton("Confirm", (dialog, which) -> {
+            String enteredNic = input.getText().toString().trim();
+            if (enteredNic.equals(appUser.getNic())) {
+                deactivateAccount();
+            } else {
+                Toast.makeText(this, "NIC does not match!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.show();
+    }
+
+    private void deactivateAccount() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.patchRequest(
+                        Constants.DEACTIVATE_EV_OWNER_URL,
+                        null, // no body
+                        appUser.getAccessToken()
+                );
+
+                runOnUiThread(() -> {
+                    Toast.makeText(ProfileActivity.this, response, Toast.LENGTH_LONG).show();
+
+                    // Clear local DB
+                    appUserDAO.clearUsers();
+
+                    // Redirect to login
+                    Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(ProfileActivity.this, "Deactivation failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+            }
+        }).start();
+    }
+
 
 }
