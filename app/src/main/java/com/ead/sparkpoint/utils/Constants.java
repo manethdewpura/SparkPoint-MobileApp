@@ -10,6 +10,10 @@ public class Constants {
     public static final String REGISTER_EV_OWNER_URL = "/evowners/register";
     public static final String UPDATE_EV_OWNER_URL = "/evowners/update";
     public static final String DEACTIVATE_EV_OWNER_URL = "/evowners/deactivate";
+    // Bookings
+    public static final String GET_BOOKING_BY_ID_URL = "/bookings/"; // append bookingId
+    public static final String UPDATE_BOOKING_STATUS_URL = "/bookings/status/"; // append bookingId
+
 
 
     public static final String GET_BOOKINGS_URL = "/bookings";

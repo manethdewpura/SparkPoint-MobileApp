@@ -3,7 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.ead.sparkpoint">
     <!-- Required for API calls -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -13,24 +18,45 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".activities.BookingDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.ScanBookingActivity"
+            android:exported="false" />
+
         <activity
             android:name=".activities.ProfileActivity"
             android:exported="false" />
+
         <!-- Launcher Activity -->
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Remove MAIN/LAUNCHER here -->
-        <activity android:name=".activities.EVOwnerHomeActivity" android:exported="true"/>
-        <activity android:name=".activities.OperatorHomeActivity" android:exported="true"/>
-        <activity android:name=".activities.RegisterActivity" android:exported="true"/>
+        <activity
+            android:name=".activities.EVOwnerHomeActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.OperatorHomeActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.RegisterActivity"
+            android:exported="true" />
 
+        <!-- ZXing CaptureActivity for QR scanning -->
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            android:stateNotNeeded="true"
+            tools:replace="android:screenOrientation" />
     </application>
 
 </manifest>
