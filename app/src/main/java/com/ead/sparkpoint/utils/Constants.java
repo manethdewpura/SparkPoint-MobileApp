@@ -8,6 +8,6 @@ public class Constants {
     public static final String CREATE_BOOKINGS_URL = "/bookings";
     public static final String UPDATE_BOOKINGS_URL = "/bookings/{bookingid}";
     public static final String DELETE_BOOKINGS_URL = "/bookings/cancel/{bookingid}";
-    public static final String GET_NEARBY_STATIONS_URL = "stations/nearby";
+    public static final String GET_NEARBY_STATIONS_URL = "/stations?isActive=true&nearLoaction.longitude=80.047234&nearLoaction.latitude=6.902995";
 }
 

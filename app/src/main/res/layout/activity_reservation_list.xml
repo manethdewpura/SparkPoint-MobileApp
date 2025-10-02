@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Button group for filters -->
+    <LinearLayout
+        android:id="@+id/layoutFilters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/btnGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:checkedButton="@id/btnCurrent"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCurrent"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/list_default_title"
+                android:textColor="@color/dark_blue"
+                app:backgroundTint="@drawable/button_filter_selector"
+                app:strokeColor="@color/dark_blue"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUpcoming"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/upcoming_bookings"
+                android:textColor="@color/dark_blue"
+                app:backgroundTint="@drawable/button_filter_selector"
+                app:strokeColor="@color/dark_blue" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPast"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/past_charging_history"
+                android:textColor="@color/dark_blue"
+                app:backgroundTint="@drawable/button_filter_selector"
+                app:strokeColor="@color/dark_blue" />
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    </LinearLayout>
+
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerReservations"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layoutFilters"
+        android:layout_marginTop="8dp"
+        android:paddingTop="10dp" />
+
+    <!-- Floating Action Button for Add Booking -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnAddReservation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/add_new_reservation"
+        app:backgroundTint="@color/orange"
+        app:srcCompat="@android:drawable/ic_input_add" />
+</RelativeLayout>

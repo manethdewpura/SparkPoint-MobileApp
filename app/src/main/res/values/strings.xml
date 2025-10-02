@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">SparkPoint</string>
+    <string name="upcoming_bookings">Upcoming Bookings</string>
+    <string name="past_charging_history">Past Charging History</string>
+    <string name="add_new_reservation">Add New Booking</string>
+    <string name="list_default_title">Bookings List</string>
+    <string name="viewQR">View QR Code</string>
+    <string name="confirm_QR">Confirmation QR Code</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="new_reservation_title">Create New Booking</string>
+    <string name="station_name">Select Station Name</string>
+    <string name="booking_date">Select Booking Date</string>
+    <string name="booking_slot">Select A Slot</string>
+    <string name="booking_slotNo">Number of Slots</string>
+    <string name="slotNo_hint">Enter number (1–5)</string>
+    <string name="confirm">Confirm</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
 </resources>
