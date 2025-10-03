@@ -1,6 +1,8 @@
 package com.ead.sparkpoint.adapters;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.models.Reservation;
+
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.ViewHolder> {
@@ -42,9 +47,41 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Reservation r = reservationList.get(position);
         holder.tvStationName.setText(r.getStationName());
-        holder.tvDate.setText("Date: " + r.getReservationTime());
-        holder.tvTime.setText("Reserved Slot: " + r.getReservationSlot());
-        holder.tvStatus.setText("Status: " + r.getStatus());
+        String dateTime = r.getReservationTime();   // e.g. "2025-10-03T00:00:00Z"
+        OffsetDateTime odt = OffsetDateTime.parse(dateTime);
+        String formattedDate = odt.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
+        holder.tvDate.setText("Reservation Date: " + formattedDate);
+        holder.tvTime.setText("Reservation Time: " + r.getReservationSlot());
+        holder.tvStatus.setText(r.getStatus());
+
+        //Apply status colours dynamically
+        switch (r.getStatus()) {
+            case "Pending":
+                holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#40FF7600"))); // orange bg 25%
+                holder.tvStatus.setTextColor(Color.parseColor("#FF7600")); // full orange text
+                break;
+            case "Confirmed":
+                holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#400191FE"))); // light blue bg 25%
+                holder.tvStatus.setTextColor(Color.parseColor("#0191FE")); // full light blue text
+                break;
+            case "In Progress":
+                holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#40FFD700"))); // dark yellow bg 25%
+                holder.tvStatus.setTextColor(Color.parseColor("#FFD700")); // full dark yellow text
+                break;
+            case "Completed":
+                holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#404CAF50"))); // green bg 25%
+                holder.tvStatus.setTextColor(Color.parseColor("#4CAF50")); // full green text
+                break;
+            case "Cancelled":
+                holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#40F44336"))); // red bg 25%
+                holder.tvStatus.setTextColor(Color.parseColor("#F44336")); // full red text
+                break;
+            case "No Show":
+                holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#409E9E9E"))); // gray bg 25%
+                holder.tvStatus.setTextColor(Color.parseColor("#9E9E9E")); // full gray text
+                break;
+        }
+
 
         if ("Confirmed".equalsIgnoreCase(r.getStatus())) {
             holder.btnViewQR.setVisibility(View.VISIBLE);

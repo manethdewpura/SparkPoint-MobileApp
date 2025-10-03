@@ -1,10 +1,14 @@
 package com.ead.sparkpoint.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,11 +16,14 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -56,8 +63,11 @@ public class ReservationActivity extends AppCompatActivity {
     private Map<String, String> stationMap = new HashMap<>();
     private List<String> stationNames = new ArrayList<>();
 
-    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTkzOTM0NjksImV4cCI6MTc1OTQyOTQ2OSwiaWF0IjoxNzU5MzkzNDY5LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.Lnf3q2ynJ1P5uVMW22fexfxWA5Pyv6PX3V96WoIcOv4";
+    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTk0OTM0ODYsImV4cCI6MTc1OTUyOTQ4NiwiaWF0IjoxNzU5NDkzNDg2LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.jhejZvBnY2BjZGOfb-xymEstuzJ_U5FCWsaNKZ5nMoE";
     private boolean isUpdateMode = false;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +79,8 @@ public class ReservationActivity extends AppCompatActivity {
         etDate = findViewById(R.id.etDate);
         etNumSlots = findViewById(R.id.etNumSlots);
         btnConfirm = findViewById(R.id.btnConfirm);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Check if update mode
         Intent intent = getIntent();
@@ -104,11 +116,63 @@ public class ReservationActivity extends AppCompatActivity {
             dpd.show();
         });
 
-        // load stations
-        loadStations();
+        //Request location and load stations
+        checkLocationPermission();
 
         btnConfirm.setOnClickListener(v -> showSummaryDialog());
     }
+
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            getDeviceLocation();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getDeviceLocation();
+            } else {
+                Toast.makeText(this, "Location permission is required to load nearby stations", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void getDeviceLocation() {
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Permission is not granted, request it
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST_CODE);
+                return;
+            }
+
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            double latitude = location.getLatitude();
+                            double longitude = location.getLongitude();
+                            loadStations(latitude, longitude);
+                        } else {
+                            Toast.makeText(this, "Unable to get device location", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Location permission is required", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     private void fetchBookingDetails(String bookingId) {
         new Thread(() -> {
@@ -142,10 +206,14 @@ public class ReservationActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void loadStations() {
+    private void loadStations(double latitude, double longitude) {
         new Thread(() -> {
             try {
-                String response = ApiClient.getRequest(Constants.GET_NEARBY_STATIONS_URL, ACCESS_TOKEN);
+                // Fetch stations
+                String url = Constants.GET_NEARBY_STATIONS_URL
+                        + "&nearLoaction.longitude=" + longitude
+                        + "&nearLoaction.latitude=" + latitude;
+                String response = ApiClient.getRequest(url, ACCESS_TOKEN);
                 JSONArray arr = new JSONArray(response);
 
                 stationNames.clear();
@@ -231,9 +299,13 @@ public class ReservationActivity extends AppCompatActivity {
                     spinnerSlots.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                            String slotItem = slotsList.get(pos);
-                            if (slotItem != null) selectedSlot = slotItem.split("\\(")[0].trim();
-                            else selectedSlot = null;
+                            if (slotsList != null && pos >= 0 && pos < slotsList.size()) {
+                                String slotItem = slotsList.get(pos);
+                                if (slotItem != null) selectedSlot = slotItem.split("\\(")[0].trim();
+                                else selectedSlot = null;
+                            } else {
+                                selectedSlot = null; // no valid selection yet
+                            }
                         }
                         @Override
                         public void onNothingSelected(AdapterView<?> parent) { selectedSlot = null; }
@@ -279,20 +351,33 @@ public class ReservationActivity extends AppCompatActivity {
             return;
         }
 
-        String summary = "Booking Summary:\n\n" +
-                "Station Id: " + selectedStationId + "\n" +
-                "Date & Time: " + slotInfo.startTime + "\n" +
-                "Number of Slots Booked: " + requestedSlots;
+        // Inflate custom view
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_booking_summary, null);
 
-        new AlertDialog.Builder(this)
-                .setTitle(isUpdateMode ? "Update Booking" : "Confirm Booking")
-                .setMessage(summary)
-                .setPositiveButton("Submit", (dialog, which) -> {
-                    if (isUpdateMode) updateBooking(slotInfo.startTime, requestedSlots);
-                    else submitBooking(slotInfo.startTime, requestedSlots);
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        // Set data
+        ((TextView) dialogView.findViewById(R.id.tvDialogTitle))
+                .setText(isUpdateMode ? "Updated Booking Summary" : "Confirm Booking Summary");
+        ((TextView) dialogView.findViewById(R.id.tvDialogStation))
+                .setText("Station Id: " + selectedStationId);
+        ((TextView) dialogView.findViewById(R.id.tvDialogDate))
+                .setText("Date & Time: " + slotInfo.startTime);
+        ((TextView) dialogView.findViewById(R.id.tvDialogSlots))
+                .setText("Number of Slots Booked: " + requestedSlots);
+
+        // Buttons
+        dialogView.findViewById(R.id.btnDialogCancel).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btnDialogSubmit).setOnClickListener(v -> {
+            if (isUpdateMode) updateBooking(slotInfo.startTime, requestedSlots);
+            else submitBooking(slotInfo.startTime, requestedSlots);
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void submitBooking(String slot, int Noslots) {
