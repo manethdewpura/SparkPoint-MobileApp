@@ -8,6 +8,8 @@ public class Constants {
     // Auth & Users
     public static final String LOGIN_URL = "/auth/login";
     public static final String REGISTER_EV_OWNER_URL = "/evowners/register";
+    public static final String REFRESH_TOKEN_URL = "/auth/refresh";
+
     public static final String UPDATE_EV_OWNER_URL = "/evowners/update";
     public static final String DEACTIVATE_EV_OWNER_URL = "/evowners/deactivate";
     // Bookings

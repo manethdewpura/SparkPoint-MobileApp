@@ -18,7 +18,7 @@ import org.json.JSONObject;
 
 public class BookingDetailActivity extends AppCompatActivity {
 
-    TextView tvBookingInfo;
+    TextView tvBookingId, tvOwnerNIC, tvStationName, tvTimeSlot, tvStatus;
     Button btnStart, btnComplete;
     AppUser appUser;
     String bookingId;
@@ -29,7 +29,12 @@ public class BookingDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking_detail);
 
-        tvBookingInfo = findViewById(R.id.tvBookingInfo);
+        // Initialize UI
+        tvBookingId = findViewById(R.id.tvBookingId);
+        tvOwnerNIC = findViewById(R.id.tvOwnerNIC);
+        tvStationName = findViewById(R.id.tvStationName);
+        tvTimeSlot = findViewById(R.id.tvTimeSlot);
+        tvStatus = findViewById(R.id.tvStatus);
         btnStart = findViewById(R.id.btnStart);
         btnComplete = findViewById(R.id.btnComplete);
 
@@ -51,18 +56,24 @@ public class BookingDetailActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     try {
-                        tvBookingInfo.setText(bookingJson.toString(2)); // simple display
+                        // Populate fields
+                        tvBookingId.setText("Booking ID: " + bookingJson.optString("id"));
+                        tvOwnerNIC.setText("Owner NIC: " + bookingJson.optString("ownerNIC"));
+                        if (bookingJson.has("station")) {
+                            tvStationName.setText("Station: " + bookingJson.getJSONObject("station").optString("name"));
+                        }
+                        tvTimeSlot.setText("Time Slot: " + bookingJson.optString("timeSlotDisplay"));
+                        tvStatus.setText("Status: " + bookingJson.optString("status"));
+
+                        // Enable/disable buttons based on status
+                        String status = bookingJson.optString("status");
+                        btnStart.setEnabled("Confirmed".equalsIgnoreCase(status));
+                        btnComplete.setEnabled("In Progress".equalsIgnoreCase(status));
+
                     } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
+                        Toast.makeText(this, "Error parsing booking details", Toast.LENGTH_LONG).show();
                     }
-                    String status = null;
-                    try {
-                        status = bookingJson.getString("status");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                    btnStart.setEnabled(status.equals("Confirmed"));
-                    btnComplete.setEnabled(status.equals("In Progress"));
                 });
 
             } catch (Exception e) {
