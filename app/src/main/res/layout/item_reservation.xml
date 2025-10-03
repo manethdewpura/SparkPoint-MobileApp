@@ -1,66 +1,96 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    android:background="@drawable/list_item_bg">
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@android:color/white">
 
-    <TextView
-        android:id="@+id/tvStationName"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/tvDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/tvTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/tvStatus"
-        android:textStyle="italic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <!-- Update/Delete buttons -->
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
+        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:paddingTop="5dp">
+        android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/btnViewQR"
+        <!-- Station name -->
+        <TextView
+            android:id="@+id/tvStationName"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textColor="@color/dark_blue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:backgroundTint="@color/dark_blue"
-            android:text="@string/viewQR"
-            android:textColor="@color/orange" />
+            android:ellipsize="end"
+            android:singleLine="true"/>
 
-        <Button
-            android:id="@+id/btnUpdate"
+        <!-- Date and Time Row -->
+        <TextView
+            android:id="@+id/tvDate"
+            android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/update"
-            android:backgroundTint="@color/dark_blue"
-            android:textColor="@color/orange"/>
+            android:textColor="@android:color/black"
+            android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/btnDelete"
+        <TextView
+            android:id="@+id/tvTime"
+            android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/delete"
-            android:backgroundTint="@color/dark_blue"
-            android:textColor="@color/orange"
-            android:layout_marginStart="10dp"/>
+            android:textColor="@android:color/black"
+            android:textSize="14sp" />
+
+        <!-- Status with color emphasis -->
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:background="@drawable/status_badge"/>
+
+        <!-- Action buttons -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:layout_marginTop="5dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewQR"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/viewQR"
+                app:strokeColor="@color/light_blue"
+                android:backgroundTint="@color/light_blue"
+                android:textColor="@color/white"
+                android:layout_marginEnd="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUpdate"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/update"
+                app:strokeColor="@color/orange"
+                android:backgroundTint="@color/orange"
+                android:textColor="@color/white"
+                android:layout_marginEnd="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDelete"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/delete"
+                app:strokeColor="@color/red"
+                android:backgroundTint="@color/red"
+                android:textColor="@color/white"/>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.cardview.widget.CardView>

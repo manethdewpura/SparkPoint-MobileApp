@@ -3,6 +3,7 @@ package com.ead.sparkpoint.activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +37,7 @@ public class ReservationListActivity extends AppCompatActivity {
     private FloatingActionButton btnAddReservation;
     private ActivityResultLauncher<Intent> reservationLauncher;
 
-    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTkzOTM0NjksImV4cCI6MTc1OTQyOTQ2OSwiaWF0IjoxNzU5MzkzNDY5LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.Lnf3q2ynJ1P5uVMW22fexfxWA5Pyv6PX3V96WoIcOv4";
+    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTk0OTM0ODYsImV4cCI6MTc1OTUyOTQ4NiwiaWF0IjoxNzU5NDkzNDg2LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.jhejZvBnY2BjZGOfb-xymEstuzJ_U5FCWsaNKZ5nMoE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,22 +91,29 @@ public class ReservationListActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // If valid → show confirmation dialog
-                    String summary = "Cancel Booking:\n\n" +
-                            "Do you want to cancel following booking?\n\n" +
+                    // Inflate custom layout
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ReservationListActivity.this);
+                    View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_reservation, null);
+                    builder.setView(dialogView);
+
+                    TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
+                    Button btnCancel = dialogView.findViewById(R.id.btnDialogCancel);
+                    Button btnConfirm = dialogView.findViewById(R.id.btnDialogConfirm);
+
+                    tvMessage.setText("Do you want to cancel the following booking?\n\n" +
                             "Station: " + reservation.getStationName() + "\n" +
                             "Date & Time: " + reservation.getReservationTime() + "\n" +
-                            "Slot: " + reservation.getReservationSlot() + "\n";
+                            "Slot: " + reservation.getReservationSlot());
 
-                    // Show confirmation dialog
-                    new AlertDialog.Builder(ReservationListActivity.this)
-                            .setTitle("Confirm Cancellation")
-                            .setMessage(summary)
-                            .setPositiveButton("Yes", (dialog, which) -> {
-                                cancelReservation(reservation.getId());
-                            })
-                            .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
-                            .show();
+                    AlertDialog dialog = builder.create();
+
+                    btnCancel.setOnClickListener(v -> dialog.dismiss());
+                    btnConfirm.setOnClickListener(v -> {
+                        dialog.dismiss();
+                        cancelReservation(reservation.getId());
+                    });
+
+                    dialog.show();
 
                 } catch (Exception e) {
                     e.printStackTrace();
