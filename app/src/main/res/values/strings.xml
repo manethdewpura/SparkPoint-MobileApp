@@ -1,4 +1,33 @@
 <resources>
     <string name="app_name">SparkPoint</string>
     <string name="profile">Profile</string>
+
+    <string name="upcoming_bookings">Upcoming</string>
+    <string name="past_charging_history">History</string>
+    <string name="add_new_reservation">Add New Booking</string>
+    <string name="list_default_title">All</string>
+    <string name="viewQR">View QR Code</string>
+    <string name="confirm_QR">Confirmation QR Code</string>
+    <string name="qr_description">Scan QR Code</string>
+    <string name="hint_qr">Scan this QR code at the station</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="new_reservation_title">Create New Booking</string>
+    <string name="station_name">Select Station Name</string>
+    <string name="booking_date">Select Booking Date</string>
+    <string name="booking_slot">Select A Slot</string>
+    <string name="booking_slotNo">Number of Slots</string>
+    <string name="slotNo_hint">Enter number (1–5)</string>
+    <string name="confirm">Confirm</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="pending_count">Pending Reservations: 0</string>
+    <string name="confirmed_count">Approved Future Reservations: 0</string>
+    <string name="view_bookings">View Bookings</string>
+    <string name="booking_summary">Booking Summary</string>
+    <string name="station_id">Station ID:</string>
+    <string name="station_datetime">Date &amp; Time:</string>
+    <string name="station_slot">Number of Slots Booked:</string>
+    <string name="cancel_booking">Cancel Booking</string>
+    <string name="delete_confirm">Are you sure you want to cancel this booking?</string>
 </resources>
