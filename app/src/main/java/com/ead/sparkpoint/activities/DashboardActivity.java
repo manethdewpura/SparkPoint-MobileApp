@@ -26,6 +26,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import android.view.MenuItem;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
+import com.ead.sparkpoint.utils.TokenManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,7 +39,7 @@ import org.json.JSONObject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class DashboardActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class DashboardActivity extends AppCompatActivity implements OnMapReadyCallback, NavigationBarView.OnItemSelectedListener {
 
     private static final int LOCATION_REQUEST_CODE = 101;
 
@@ -56,6 +62,15 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         tvConfirmed = findViewById(R.id.tvConfirmedCount);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Setup bottom navigation
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        // Ensure the correct item is highlighted before wiring the listener
+        bottomNavigation.setSelectedItemId(R.id.nav_home);
+        bottomNavigation.setOnItemSelectedListener(this);
+        
+        // Setup menu button
+        setupMenuButton();
 
         //Button navigation to ReservationListActivity
 //        MaterialButton btnReservationList = findViewById(R.id.btnReservationList);
@@ -189,5 +204,66 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        
+        if (itemId == R.id.nav_home) {
+            // Already on home; consume the event to keep highlight
+            return true;
+        } else if (itemId == R.id.nav_bookings) {
+            Intent bookingsIntent = new Intent(this, ReservationListActivity.class);
+            startActivity(bookingsIntent);
+            return true;
+        } else if (itemId == R.id.nav_profile) {
+            Intent profileIntent = new Intent(this, ProfileActivity.class);
+            startActivity(profileIntent);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Setup the menu button in the top app bar
+     */
+    private void setupMenuButton() {
+        ImageButton menuButton = findViewById(R.id.menuButton);
+        if (menuButton != null) {
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, menuButton);
+                popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
+                
+                popup.setOnMenuItemClickListener(item -> {
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.menu_logout) {
+                        logoutUser();
+                        return true;
+                    }
+                    return false;
+                });
+                
+                popup.show();
+            });
+        }
+    }
+    
+    /**
+     * Logout user from the app
+     */
+    private void logoutUser() {
+        new Thread(() -> {
+            try {
+                TokenManager tokenManager = new TokenManager(this);
+                tokenManager.logoutUser();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    finish();
+                });
+            }
+        }).start();
     }
 }

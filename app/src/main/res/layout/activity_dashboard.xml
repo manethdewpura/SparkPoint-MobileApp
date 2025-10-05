@@ -1,21 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="@color/dark_blue">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+    <!-- Top App Bar -->
+    <include
+        android:id="@+id/topAppBarContainer"
+        layout="@layout/top_app_bar" />
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/orange"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-        app:title="@string/app_name"
-        app:titleTextColor="@android:color/white"
-        app:navigationIcon="@mipmap/ic_launcher"
-        app:titleCentered="true"
-        android:elevation="4dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
     <!-- Top Section with Counts -->
     <LinearLayout
@@ -23,7 +28,6 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:padding="8dp"
-        android:layout_below="@id/topAppBar"
         android:layout_margin="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -78,12 +82,25 @@
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_below="@id/headerSection"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="400dp"
         android:layout_margin="12dp"
         android:clipToOutline="true"
         android:background="@android:color/white"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:itemIconTint="@color/bottom_nav_item_color"
+        app:itemTextColor="@color/bottom_nav_item_color"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_navigation_menu" />
 
     <!-- Floating Action Button styled -->
 <!--    <com.google.android.material.button.MaterialButton-->
@@ -98,4 +115,4 @@
 <!--        app:cornerRadius="50dp"-->
 <!--        app:backgroundTint="@color/orange"/>-->
 
-</RelativeLayout>
+</LinearLayout>
