@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Other styles or your app theme might be here -->
+
+    <style name="ProfileField" parent="Widget.AppCompat.EditText">
+        <!-- Common attributes for your profile EditText fields -->
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">8dp</item> <!-- Example: Add some space below each field -->
+        <item name="android:padding">12dp</item>          <!-- Example: Add some padding inside the EditText -->
+        <item name="android:background">@drawable/edit_text_background</item> <!-- Optional: if you have a custom background drawable -->
+        <item name="android:textSize">16sp</item>
+        <!-- Add any other common attributes you want for these fields -->
+        <!-- For example, text color, hint color, etc. -->
+        <!-- <item name="android:textColor">@color/your_text_color</item> -->
+        <!-- <item name="android:textColorHint">@color/your_hint_color</item> -->
+    </style>
+
+    <!-- Make sure your app theme is also defined, usually here or in themes.xml -->
+    <!-- For example: -->
+    <!-- <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar"> -->
+    <!-- Customize your theme here. -->
+    <!-- </style> -->
+
+</resources>
