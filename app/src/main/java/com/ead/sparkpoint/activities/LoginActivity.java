@@ -95,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (roleId != null) { // Always good to check for null
                         if (roleId == 3) { // 3 for EV Owner
-                            startActivity(new Intent(LoginActivity.this, EVOwnerHomeActivity.class));
+                            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                         } else if (roleId == 2) { // 2 for Station Operator
                             startActivity(new Intent(LoginActivity.this, OperatorHomeActivity.class));
                         } else {

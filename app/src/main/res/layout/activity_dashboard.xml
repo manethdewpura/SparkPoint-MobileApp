@@ -82,21 +82,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="12dp"
-        android:layout_above="@id/btnReservationList"
         android:clipToOutline="true"
         android:background="@android:color/white"/>
 
     <!-- Floating Action Button styled -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnReservationList"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/view_bookings"
-        android:textColor="@android:color/white"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="20dp"
-        app:cornerRadius="50dp"
-        app:backgroundTint="@color/orange"/>
+<!--    <com.google.android.material.button.MaterialButton-->
+<!--        android:id="@+id/btnReservationList"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="@string/view_bookings"-->
+<!--        android:textColor="@android:color/white"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_alignParentEnd="true"-->
+<!--        android:layout_margin="20dp"-->
+<!--        app:cornerRadius="50dp"-->
+<!--        app:backgroundTint="@color/orange"/>-->
 
 </RelativeLayout>

@@ -37,8 +37,6 @@ public class ReservationListActivity extends AppCompatActivity {
     private FloatingActionButton btnAddReservation;
     private ActivityResultLauncher<Intent> reservationLauncher;
 
-    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTk1NTU3ODcsImV4cCI6MTc1OTU5MTc4NywiaWF0IjoxNzU5NTU1Nzg3LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.SbGW0HT-zbxSJsMS8ul-PGWYTVJqeG9x935SmrR2UCo";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -169,7 +167,7 @@ public class ReservationListActivity extends AppCompatActivity {
     private void loadReservations(String url) {
         new Thread(() -> {
             try {
-                String response = ApiClient.getRequest(url, ACCESS_TOKEN);
+                String response = ApiClient.getRequest(ReservationListActivity.this, url);
                 JSONArray arr = new JSONArray(response);
 
                 reservationList.clear();
@@ -209,7 +207,7 @@ public class ReservationListActivity extends AppCompatActivity {
                 body.put("status", "Cancelled");
 
                 String url = Constants.DELETE_BOOKINGS_URL.replace("{bookingid}", bookingId);
-                String response = ApiClient.patchRequest(url, body.toString(), ACCESS_TOKEN);
+                String response = ApiClient.patchRequest(ReservationListActivity.this, url, body.toString());
 
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Reservation Cancelled!", Toast.LENGTH_SHORT).show();

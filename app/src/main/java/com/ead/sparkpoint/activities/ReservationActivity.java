@@ -62,8 +62,6 @@ public class ReservationActivity extends AppCompatActivity {
     // Station map for spinner prefill
     private Map<String, String> stationMap = new HashMap<>();
     private List<String> stationNames = new ArrayList<>();
-
-    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTk1NTU3ODcsImV4cCI6MTc1OTU5MTc4NywiaWF0IjoxNzU5NTU1Nzg3LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.SbGW0HT-zbxSJsMS8ul-PGWYTVJqeG9x935SmrR2UCo";
     private boolean isUpdateMode = false;
 
     private FusedLocationProviderClient fusedLocationClient;
@@ -178,7 +176,7 @@ public class ReservationActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 String url = Constants.UPDATE_BOOKINGS_URL.replace("{bookingid}", bookingId);
-                String response = ApiClient.getRequest(url, ACCESS_TOKEN);
+                String response = ApiClient.getRequest(ReservationActivity.this, url);
                 JSONObject obj = new JSONObject(response);
 
                 selectedStationId = obj.getJSONObject("station").getString("id");
@@ -213,7 +211,7 @@ public class ReservationActivity extends AppCompatActivity {
                 String url = Constants.GET_NEARBY_STATIONS_URL
                         + "&nearLoaction.longitude=" + longitude
                         + "&nearLoaction.latitude=" + latitude;
-                String response = ApiClient.getRequest(url, ACCESS_TOKEN);
+                String response = ApiClient.getRequest(ReservationActivity.this, url);
                 JSONArray arr = new JSONArray(response);
 
                 stationNames.clear();
@@ -267,7 +265,7 @@ public class ReservationActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 String endpoint = "/bookings/availability/" + stationId + "/date/" + date;
-                String response = ApiClient.getRequest(endpoint, ACCESS_TOKEN);
+                String response = ApiClient.getRequest(ReservationActivity.this, endpoint);
 
                 JSONObject obj = new JSONObject(response);
                 JSONArray arr = obj.getJSONArray("availabilityInfo");
@@ -388,7 +386,7 @@ public class ReservationActivity extends AppCompatActivity {
                 body.put("reservationTime", slot );
                 body.put("slotsRequested", Noslots);
 
-                ApiClient.postRequest(Constants.CREATE_BOOKINGS_URL, body.toString(), ACCESS_TOKEN);
+                ApiClient.postRequest(ReservationActivity.this, Constants.CREATE_BOOKINGS_URL, body.toString());
 
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Booking Successful!", Toast.LENGTH_SHORT).show();
@@ -411,7 +409,7 @@ public class ReservationActivity extends AppCompatActivity {
                 body.put("slotsRequested", Noslots);
 
                 String url = Constants.UPDATE_BOOKINGS_URL.replace("{bookingid}", bookingId);
-                ApiClient.patchRequest(url, body.toString(), ACCESS_TOKEN);
+                ApiClient.patchRequest(ReservationActivity.this, url, body.toString());
 
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Booking Updated Successfully!", Toast.LENGTH_SHORT).show();

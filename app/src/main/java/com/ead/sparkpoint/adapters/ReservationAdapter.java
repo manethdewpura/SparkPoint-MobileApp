@@ -3,6 +3,7 @@ package com.ead.sparkpoint.adapters;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,8 +49,14 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         Reservation r = reservationList.get(position);
         holder.tvStationName.setText(r.getStationName());
         String dateTime = r.getReservationTime();   // e.g. "2025-10-03T00:00:00Z"
-        OffsetDateTime odt = OffsetDateTime.parse(dateTime);
-        String formattedDate = odt.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
+        OffsetDateTime odt = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            odt = OffsetDateTime.parse(dateTime);
+        }
+        String formattedDate = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            formattedDate = odt.toLocalDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
+        }
         holder.tvDate.setText("Reservation Date: " + formattedDate);
         holder.tvTime.setText("Reservation Time: " + r.getReservationSlot());
         holder.tvStatus.setText(r.getStatus());

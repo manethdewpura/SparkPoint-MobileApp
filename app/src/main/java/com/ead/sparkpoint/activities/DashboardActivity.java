@@ -46,12 +46,11 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
     // Handler for UI updates
     Handler handler = new Handler(Looper.getMainLooper());
 
-    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTk1NTU3ODcsImV4cCI6MTc1OTU5MTc4NywiaWF0IjoxNzU5NTU1Nzg3LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.SbGW0HT-zbxSJsMS8ul-PGWYTVJqeG9x935SmrR2UCo";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+
 
         tvPending = findViewById(R.id.tvPendingCount);
         tvConfirmed = findViewById(R.id.tvConfirmedCount);
@@ -59,11 +58,11 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         //Button navigation to ReservationListActivity
-        MaterialButton btnReservationList = findViewById(R.id.btnReservationList);
-        btnReservationList.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, ReservationListActivity.class);
-            startActivity(intent);
-        });
+//        MaterialButton btnReservationList = findViewById(R.id.btnReservationList);
+//        btnReservationList.setOnClickListener(v -> {
+//            Intent intent = new Intent(DashboardActivity.this, ReservationListActivity.class);
+//            startActivity(intent);
+//        });
 
         // Fetch counts
         fetchReservationCount(Constants.PENDING_BOOKINGS_URL, tvPending, "Pending Reservations: ");
@@ -128,7 +127,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         executor.execute(() -> {
             int count = 0;
             try {
-                String response = ApiClient.getRequest(urlString, ACCESS_TOKEN);
+                String response = ApiClient.getRequest(DashboardActivity.this, urlString);
                 JSONArray jsonArray = new JSONArray(response);
                 count = jsonArray.length();
             } catch (Exception e) {
@@ -144,7 +143,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
     private void fetchNearbyStations(String urlString) {
         executor.execute(() -> {
             try {
-                String response = ApiClient.getRequest(urlString, ACCESS_TOKEN);
+                String response = ApiClient.getRequest(DashboardActivity.this, urlString);
                 JSONArray stationsArray = new JSONArray(response);
 
                 handler.post(() -> {
