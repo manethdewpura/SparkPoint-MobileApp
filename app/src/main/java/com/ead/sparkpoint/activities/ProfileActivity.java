@@ -17,9 +17,16 @@ import com.ead.sparkpoint.utils.Constants;
 import org.json.JSONObject;
 import android.app.AlertDialog;
 import android.content.Intent;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
+import com.ead.sparkpoint.utils.TokenManager;
 
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
 
     EditText etUsername, etEmail, etFirstName, etLastName, etPassword, etNic, etPhone;
     Button btnEdit, btnSave;
@@ -44,6 +51,14 @@ public class ProfileActivity extends AppCompatActivity {
         Button btnDeactivate = findViewById(R.id.btnDeactivate);
         btnDeactivate.setOnClickListener(v -> showDeactivateDialog());
 
+        // Setup bottom navigation
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        // Ensure the correct item is highlighted before wiring the listener
+        bottomNavigation.setSelectedItemId(R.id.nav_profile);
+        bottomNavigation.setOnItemSelectedListener(this);
+
+        // Setup menu button
+        setupMenuButton();
 
         appUserDAO = new AppUserDAO(this);
         appUser = appUserDAO.getUser(); // load from local db
@@ -180,6 +195,67 @@ public class ProfileActivity extends AppCompatActivity {
                 runOnUiThread(() ->
                         Toast.makeText(ProfileActivity.this, "Deactivation failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
                 );
+            }
+        }).start();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.nav_profile) {
+            // Already on profile; consume the event to keep highlight
+            return true;
+        } else if (itemId == R.id.nav_home) {
+            Intent homeIntent = new Intent(this, DashboardActivity.class);
+            startActivity(homeIntent);
+            return true;
+        } else if (itemId == R.id.nav_bookings) {
+            Intent bookingsIntent = new Intent(this, ReservationListActivity.class);
+            startActivity(bookingsIntent);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Setup the menu button in the top app bar
+     */
+    private void setupMenuButton() {
+        ImageButton menuButton = findViewById(R.id.menuButton);
+        if (menuButton != null) {
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, menuButton);
+                popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
+
+                popup.setOnMenuItemClickListener(item -> {
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.menu_logout) {
+                        logoutUser();
+                        return true;
+                    }
+                    return false;
+                });
+
+                popup.show();
+            });
+        }
+    }
+
+    /**
+     * Logout user from the app
+     */
+    private void logoutUser() {
+        new Thread(() -> {
+            try {
+                TokenManager tokenManager = new TokenManager(this);
+                tokenManager.logoutUser();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    finish();
+                });
             }
         }).start();
     }

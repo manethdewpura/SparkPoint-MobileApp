@@ -6,14 +6,35 @@
         <!-- Common attributes for your profile EditText fields -->
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginBottom">8dp</item> <!-- Example: Add some space below each field -->
-        <item name="android:padding">12dp</item>          <!-- Example: Add some padding inside the EditText -->
-        <item name="android:background">@drawable/edit_text_background</item> <!-- Optional: if you have a custom background drawable -->
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:background">@drawable/edit_text_background</item>
         <item name="android:textSize">16sp</item>
-        <!-- Add any other common attributes you want for these fields -->
-        <!-- For example, text color, hint color, etc. -->
-        <!-- <item name="android:textColor">@color/your_text_color</item> -->
-        <!-- <item name="android:textColorHint">@color/your_hint_color</item> -->
+        <item name="android:textColor">@color/dark_blue</item>
+        <item name="android:textColorHint">@color/light_blue</item>
+        <item name="android:textColorHighlight">@color/orange</item>
+        <item name="android:inputType">text</item>
+        <!-- Let runtime logic control enabled/focusable states -->
+    </style>
+
+    <!-- Profile Button Style -->
+    <style name="ProfileButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="backgroundTint">@color/orange</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <!-- Toolbar Title Style -->
+    <style name="ToolbarTitleTextAppearance" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <!-- Make sure your app theme is also defined, usually here or in themes.xml -->

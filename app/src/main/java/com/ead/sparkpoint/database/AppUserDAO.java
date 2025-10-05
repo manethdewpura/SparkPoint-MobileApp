@@ -31,14 +31,11 @@ public class AppUserDAO {
         values.put(DBHelper.COL_REFRESH_TOKEN, user.getRefreshToken());
 
         db.insertWithOnConflict(DBHelper.TABLE_USER, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-        db.close();
+        // Do NOT close the database here
     }
 
     public AppUser getUser() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        // It's good practice to specify which columns you want,
-        // or ensure your AppUser constructor matches the order of columns if using null for selection.
-        // For clarity, let's specify all columns in the order expected by the updated AppUser constructor.
         String[] columns = {
                 DBHelper.COL_ID, DBHelper.COL_USERNAME, DBHelper.COL_EMAIL,
                 DBHelper.COL_ROLE_ID, DBHelper.COL_ROLE_NAME,
@@ -48,14 +45,14 @@ public class AppUserDAO {
         };
         Cursor cursor = db.query(DBHelper.TABLE_USER, columns, null, null, null, null, null);
 
+        AppUser user = null;
         if (cursor != null && cursor.moveToFirst()) {
-            AppUser user = new AppUser(
+            user = new AppUser(
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_ID)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_USERNAME)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_EMAIL)),
                     cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COL_ROLE_ID)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_ROLE_NAME)),
-                    // Retrieve and pass the new fields in the correct order
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_FIRST_NAME)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_LAST_NAME)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_PASSWORD)),
@@ -64,20 +61,17 @@ public class AppUserDAO {
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_ACCESS_TOKEN)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_REFRESH_TOKEN))
             );
-            cursor.close();
-            db.close(); // Close the database when done
-            return user;
         }
         if (cursor != null) {
-            cursor.close();
+            cursor.close(); // Only close the cursor
         }
-        db.close(); // Close the database if user not found or cursor is null
-        return null;
+        // Do NOT close the database here
+        return user;
     }
 
     public void clearUsers() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.delete(DBHelper.TABLE_USER, null, null);
-        db.close();
+        // Do NOT close the database here
     }
 }

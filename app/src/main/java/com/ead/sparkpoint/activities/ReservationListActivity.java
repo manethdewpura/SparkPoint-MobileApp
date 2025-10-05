@@ -19,6 +19,13 @@ import com.ead.sparkpoint.models.Reservation;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
+import com.ead.sparkpoint.utils.TokenManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class ReservationListActivity extends AppCompatActivity {
+public class ReservationListActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
 
     private RecyclerView recyclerReservations;
     private List<Reservation> reservationList;
@@ -46,6 +53,15 @@ public class ReservationListActivity extends AppCompatActivity {
         btnUpcoming = findViewById(R.id.btnUpcoming);
         btnPast = findViewById(R.id.btnPast);
         btnAddReservation = findViewById(R.id.btnAddReservation);
+
+        // Setup bottom navigation
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        // Ensure the correct item is highlighted before wiring the listener
+        bottomNavigation.setSelectedItemId(R.id.nav_bookings);
+        bottomNavigation.setOnItemSelectedListener(this);
+        
+        // Setup menu button
+        setupMenuButton();
 
         recyclerReservations = findViewById(R.id.recyclerReservations);
         recyclerReservations.setLayoutManager(new LinearLayoutManager(this));
@@ -216,6 +232,67 @@ public class ReservationListActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> Toast.makeText(this, "Failed to cancel reservation", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        
+        if (itemId == R.id.nav_bookings) {
+            // Already on bookings; consume the event to keep highlight
+            return true;
+        } else if (itemId == R.id.nav_home) {
+            Intent homeIntent = new Intent(this, DashboardActivity.class);
+            startActivity(homeIntent);
+            return true;
+        } else if (itemId == R.id.nav_profile) {
+            Intent profileIntent = new Intent(this, ProfileActivity.class);
+            startActivity(profileIntent);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Setup the menu button in the top app bar
+     */
+    private void setupMenuButton() {
+        ImageButton menuButton = findViewById(R.id.menuButton);
+        if (menuButton != null) {
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, menuButton);
+                popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
+                
+                popup.setOnMenuItemClickListener(item -> {
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.menu_logout) {
+                        logoutUser();
+                        return true;
+                    }
+                    return false;
+                });
+                
+                popup.show();
+            });
+        }
+    }
+    
+    /**
+     * Logout user from the app
+     */
+    private void logoutUser() {
+        new Thread(() -> {
+            try {
+                TokenManager tokenManager = new TokenManager(this);
+                tokenManager.logoutUser();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    finish();
+                });
             }
         }).start();
     }

@@ -29,4 +29,6 @@
     <string name="station_slot">Number of Slots Booked:</string>
     <string name="cancel_booking">Cancel Booking</string>
     <string name="delete_confirm">Are you sure you want to cancel this booking?</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="bookings">Bookings</string>
 </resources>

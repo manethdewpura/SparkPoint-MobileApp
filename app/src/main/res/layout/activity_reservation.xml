@@ -59,6 +59,8 @@
             android:focusable="false"
             android:clickable="true"
             android:background="@drawable/edittext_selector"
+            android:textColor="@color/dark_blue"
+            android:textColorHint="@color/light_blue"
             android:paddingHorizontal="12dp"
             android:textSize="14sp"
             android:layout_marginTop="6dp"/>
@@ -98,6 +100,8 @@
             android:inputType="number"
             android:hint="@string/slotNo_hint"
             android:background="@drawable/edittext_selector"
+            android:textColor="@color/dark_blue"
+            android:textColorHint="@color/light_blue"
             android:paddingHorizontal="12dp"
             android:textSize="14sp"
             android:layout_marginTop="6dp"/>
