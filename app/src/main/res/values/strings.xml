@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">SparkPoint</string>
+    <string name="profile">Profile</string>
     <string name="upcoming_bookings">Upcoming</string>
     <string name="past_charging_history">History</string>
     <string name="add_new_reservation">Add New Booking</string>

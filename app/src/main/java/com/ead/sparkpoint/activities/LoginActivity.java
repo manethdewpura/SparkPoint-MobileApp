@@ -1,0 +1,121 @@
+package com.ead.sparkpoint.activities;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.ead.sparkpoint.R;
+import com.ead.sparkpoint.database.AppUserDAO;
+import com.ead.sparkpoint.models.AppUser;
+import com.ead.sparkpoint.utils.ApiClient;
+import com.ead.sparkpoint.utils.Constants;
+
+import org.json.JSONObject;
+
+public class LoginActivity extends AppCompatActivity {
+
+    EditText etUsername, etPassword;
+    Button btnLogin;
+    AppUserDAO appUserDAO;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+
+        etUsername = findViewById(R.id.etUsername);
+        etPassword = findViewById(R.id.etPassword);
+        btnLogin = findViewById(R.id.btnLogin);
+
+        appUserDAO = new AppUserDAO(this);
+
+        btnLogin.setOnClickListener(v -> loginUser());
+
+        TextView tvSignUp = findViewById(R.id.tvSignUp);
+
+        tvSignUp.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+        });
+
+    }
+
+    private void loginUser() {
+        String username = etUsername.getText().toString();
+        String password = etPassword.getText().toString();
+
+        new Thread(() -> {
+            try {
+                JSONObject req = new JSONObject();
+                req.put("Username", username);
+                req.put("Password", password);
+
+                String response = ApiClient.postRequest(LoginActivity.this, Constants.LOGIN_URL, req.toString());
+
+                JSONObject res = new JSONObject(response);
+
+                // ✅ Check if backend only sent a message (e.g., deactivated account)
+                if (res.has("message")) {
+                    String msg = res.getString("message");
+                    runOnUiThread(() ->
+                            Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show()
+                    );
+                    return; // ⛔ Stop here, don't try to parse "user"
+                }
+
+                JSONObject userJson = res.getJSONObject("user");
+
+                AppUser appUser = new AppUser(
+                        userJson.getString("id"),
+                        userJson.getString("username"),
+                        userJson.getString("email"),
+                        userJson.getInt("roleId"),
+                        userJson.getString("roleName"),
+                        // Ensure these fields are in your userJson from the login API
+                        userJson.has("firstName") ? userJson.getString("firstName") : null,
+                        userJson.has("lastName") ? userJson.getString("lastName") : null,
+                        userJson.has("password") ? userJson.getString("password") : null, // Or handle appropriately
+                        userJson.has("nic") ? userJson.getString("nic") : null,
+                        userJson.has("phone") ? userJson.getString("phone") : null,
+                        res.getString("accessToken"),
+                        res.getString("refreshToken")
+                );
+
+                appUserDAO.clearUsers();
+                appUserDAO.insertOrUpdateUser(appUser);
+
+                runOnUiThread(() -> {
+                    Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+
+                    Integer roleId = appUser.getRoleId(); // Get the role ID
+
+                    if (roleId != null) { // Always good to check for null
+                        if (roleId == 3) { // 3 for EV Owner
+                            startActivity(new Intent(LoginActivity.this, EVOwnerHomeActivity.class));
+                        } else if (roleId == 2) { // 2 for Station Operator
+                            startActivity(new Intent(LoginActivity.this, OperatorHomeActivity.class));
+                        } else {
+                            // Optional: Handle cases where roleId is neither 2 nor 3
+                            Toast.makeText(LoginActivity.this, "Unknown user role ID: " + roleId, Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        // Optional: Handle cases where roleId is null (if possible from your API)
+                        Toast.makeText(LoginActivity.this, "User role ID is missing.", Toast.LENGTH_LONG).show();
+                    }
+                    finish();
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(LoginActivity.this, "Login failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+            }
+
+        }).start();
+    }
+}
