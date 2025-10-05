@@ -63,7 +63,7 @@ public class ReservationActivity extends AppCompatActivity {
     private Map<String, String> stationMap = new HashMap<>();
     private List<String> stationNames = new ArrayList<>();
 
-    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTk0OTM0ODYsImV4cCI6MTc1OTUyOTQ4NiwiaWF0IjoxNzU5NDkzNDg2LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.jhejZvBnY2BjZGOfb-xymEstuzJ_U5FCWsaNKZ5nMoE";
+    private static final String ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OGQ2ODhmNzM5MGVjYzY0YjBmMTlmNWIiLCJ1bmlxdWVfbmFtZSI6InNhbmRpdGhpIiwiZW1haWwiOiJzYW5kaXRoaW5ldGhzaWx1bmlAZ21haWwuY29tIiwicm9sZSI6IjMiLCJuYmYiOjE3NTk1NTU3ODcsImV4cCI6MTc1OTU5MTc4NywiaWF0IjoxNzU5NTU1Nzg3LCJpc3MiOiJTcGFya1BvaW50X1NlcnZlciIsImF1ZCI6IlNwYXJrUG9pbnRfQ2xpZW50In0.SbGW0HT-zbxSJsMS8ul-PGWYTVJqeG9x935SmrR2UCo";
     private boolean isUpdateMode = false;
 
     private FusedLocationProviderClient fusedLocationClient;

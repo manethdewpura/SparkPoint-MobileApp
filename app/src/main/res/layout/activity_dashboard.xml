@@ -5,12 +5,25 @@
     android:layout_height="match_parent"
     android:background="@color/dark_blue">
 
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/orange"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:title="@string/app_name"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@mipmap/ic_launcher"
+        app:titleCentered="true"
+        android:elevation="4dp" />
+
     <!-- Top Section with Counts -->
     <LinearLayout
         android:id="@+id/headerSection"
         android:orientation="horizontal"
         android:gravity="center"
         android:padding="8dp"
+        android:layout_below="@id/topAppBar"
         android:layout_margin="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
