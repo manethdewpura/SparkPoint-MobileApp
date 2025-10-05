@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_blue"
+    android:padding="16dp">
+
+    <!-- Button group for filters -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/btnGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:checkedButton="@id/btnCurrent"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCurrent"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/list_default_title"
+            android:textStyle="bold"
+            android:textColor="@drawable/btn_toggle_text"
+            app:strokeColor="@color/dark_blue"
+            app:checkedIcon="@android:drawable/ic_menu_today"
+            app:backgroundTint="@drawable/btn_toggle_bg"
+            app:checkedIconTint="@android:color/white"
+            app:iconTint="@color/dark_blue"
+            app:iconPadding="4dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnUpcoming"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/upcoming_bookings"
+            android:textStyle="bold"
+            android:textColor="@drawable/btn_toggle_text"
+            app:strokeColor="@color/dark_blue"
+            app:checkedIcon="@android:drawable/ic_menu_my_calendar"
+            app:backgroundTint="@drawable/btn_toggle_bg"
+            app:checkedIconTint="@android:color/white"
+            app:iconTint="@color/dark_blue"
+            app:iconPadding="4dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPast"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/past_charging_history"
+            android:textStyle="bold"
+            android:textColor="@drawable/btn_toggle_text"
+            app:strokeColor="@color/dark_blue"
+            app:checkedIcon="@android:drawable/ic_menu_recent_history"
+            app:backgroundTint="@drawable/btn_toggle_bg"
+            app:checkedIconTint="@android:color/white"
+            app:iconTint="@color/dark_blue"
+            app:iconPadding="4dp"/>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerReservations"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/btnGroup"
+        android:layout_marginTop="8dp"
+        android:padding="10dp"
+        android:clipToPadding="false"
+        android:elevation="2dp" />
+
+    <!-- Floating Action Button for Add Booking -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnAddReservation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/add_new_reservation"
+        app:backgroundTint="@color/orange"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:elevation="8dp"/>
+</RelativeLayout>

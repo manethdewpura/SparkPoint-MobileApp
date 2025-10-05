@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_background">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tvDialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/booking_summary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/dark_blue"
+        android:gravity="center"
+        android:paddingBottom="16dp" />
+
+    <!-- Station -->
+    <TextView
+        android:id="@+id/tvDialogStation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/station_id"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingTop="6dp" />
+
+    <!-- Date -->
+    <TextView
+        android:id="@+id/tvDialogDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/station_datetime"
+        android:textSize="16sp"
+        android:paddingTop="6dp" />
+
+    <!-- Slots -->
+    <TextView
+        android:id="@+id/tvDialogSlots"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/station_slot"
+        android:textSize="16sp"
+        android:paddingTop="6dp" />
+
+    <!-- Buttons Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingTop="20dp">
+
+        <Button
+            android:id="@+id/btnDialogCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:backgroundTint="@color/red"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="12dp" />
+
+        <Button
+            android:id="@+id/btnDialogSubmit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm"
+            android:backgroundTint="@color/light_blue"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+</LinearLayout>
