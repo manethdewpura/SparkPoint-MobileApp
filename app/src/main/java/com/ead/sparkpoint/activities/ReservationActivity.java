@@ -226,8 +226,8 @@ public class ReservationActivity extends AppCompatActivity {
                 }
 
                 runOnUiThread(() -> {
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, stationNames);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, stationNames);
+                    adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
                     spinnerStations.setAdapter(adapter);
 
                     spinnerStations.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -289,8 +289,8 @@ public class ReservationActivity extends AppCompatActivity {
                 }
 
                 runOnUiThread(() -> {
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, slotsList);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, slotsList);
+                    adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
                     spinnerSlots.setAdapter(adapter);
                     spinnerSlots.setEnabled(!slotsList.isEmpty());
 
