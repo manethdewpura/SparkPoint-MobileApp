@@ -51,10 +51,17 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         Button btnDeactivate = findViewById(R.id.btnDeactivate);
         btnDeactivate.setOnClickListener(v -> showDeactivateDialog());
 
-        // Setup bottom navigation
+        // Setup bottom navigation (EV Owner menu by default). If operator, we switch menu.
         BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
-        // Ensure the correct item is highlighted before wiring the listener
-        bottomNavigation.setSelectedItemId(R.id.nav_profile);
+        AppUserDAO daoForRole = new AppUserDAO(this);
+        AppUser roleUser = daoForRole.getUser();
+        if (roleUser != null && Integer.valueOf(2).equals(roleUser.getRoleId())) {
+            bottomNavigation.getMenu().clear();
+            bottomNavigation.inflateMenu(R.menu.bottom_navigation_operator_menu);
+            bottomNavigation.setSelectedItemId(R.id.nav_operator_profile);
+        } else {
+            bottomNavigation.setSelectedItemId(R.id.nav_profile);
+        }
         bottomNavigation.setOnItemSelectedListener(this);
 
         // Setup menu button
@@ -74,7 +81,25 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             etPhone.setText(appUser.getPhone());
         }
 
-        setEditable(false);
+        // If operator: enforce read-only (no edit/save/deactivate)
+        boolean isOperator = roleUser != null && Integer.valueOf(2).equals(roleUser.getRoleId());
+        setEditable(!isOperator);
+        if (isOperator) {
+            // disable inputs explicitly for safety
+            etUsername.setEnabled(false);
+            etEmail.setEnabled(false);
+            etFirstName.setEnabled(false);
+            etLastName.setEnabled(false);
+            etPassword.setEnabled(false);
+            etNic.setEnabled(false);
+            etPhone.setEnabled(false);
+
+            // disable action buttons
+            btnEdit.setEnabled(false);
+            btnSave.setEnabled(false);
+            btnDeactivate.setEnabled(false);
+            btnDeactivate.setVisibility(android.view.View.GONE);
+        }
 
         btnEdit.setOnClickListener(v -> setEditable(true));
 
@@ -203,15 +228,20 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
 
-        if (itemId == R.id.nav_profile) {
+        if (itemId == R.id.nav_profile || itemId == R.id.nav_operator_profile) {
             // Already on profile; consume the event to keep highlight
             return true;
-        } else if (itemId == R.id.nav_home) {
+        } else if (itemId == R.id.nav_home || itemId == R.id.nav_operator_home) {
             Intent homeIntent = new Intent(this, DashboardActivity.class);
+            if (itemId == R.id.nav_operator_home) {
+                homeIntent = new Intent(this, OperatorHomeActivity.class);
+            }
             startActivity(homeIntent);
             return true;
-        } else if (itemId == R.id.nav_bookings) {
-            Intent bookingsIntent = new Intent(this, ReservationListActivity.class);
+        } else if (itemId == R.id.nav_bookings || itemId == R.id.nav_operator_bookings) {
+            Intent bookingsIntent = (itemId == R.id.nav_operator_bookings)
+                    ? new Intent(this, OperatorBookingsActivity.class)
+                    : new Intent(this, ReservationListActivity.class);
             startActivity(bookingsIntent);
             return true;
         }
