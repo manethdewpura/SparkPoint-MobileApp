@@ -99,13 +99,10 @@ public class ProfileActivity extends AppCompatActivity {
                 req.put("NIC", nic);
                 req.put("Phone", phone);
 
-                Log.d("ProfileUpdate", "Sending JSON: " + req.toString());
-
-
                 String response = ApiClient.patchRequest(
+                        ProfileActivity.this,
                         Constants.UPDATE_EV_OWNER_URL,
-                        req.toString(),
-                        appUser.getAccessToken()
+                        req.toString()
                 );
 
                 runOnUiThread(() -> {
@@ -128,6 +125,7 @@ public class ProfileActivity extends AppCompatActivity {
                 e.printStackTrace();
                 runOnUiThread(() ->
                         Toast.makeText(ProfileActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
+
                 );
             }
         }).start();
@@ -160,9 +158,9 @@ public class ProfileActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 String response = ApiClient.patchRequest(
+                        ProfileActivity.this,
                         Constants.DEACTIVATE_EV_OWNER_URL,
-                        null, // no body
-                        appUser.getAccessToken()
+                        null
                 );
 
                 runOnUiThread(() -> {

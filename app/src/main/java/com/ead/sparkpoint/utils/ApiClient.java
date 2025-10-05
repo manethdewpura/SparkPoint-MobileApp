@@ -1,5 +1,8 @@
 package com.ead.sparkpoint.utils;
 
+import android.content.Context;
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -38,7 +41,8 @@ public class ApiClient {
 
         // ✅ Handle success & error responses
         BufferedReader br;
-        if (conn.getResponseCode() >= 200 && conn.getResponseCode() < 300) {
+        int responseCode = conn.getResponseCode(); // Get response code once
+        if (responseCode >= 200 && responseCode < 300) {
             br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
         } else {
             br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
@@ -54,27 +58,122 @@ public class ApiClient {
     }
 
     // 🔹 GET request (no body)
-    public static String getRequest(String endpoint, String token) throws Exception {
-        return sendRequest(endpoint, "GET", null, token);
+    public static String getRequest(Context context, String endpoint) throws Exception {
+        TokenManager tokenManager = new TokenManager(context);
+        String token =  tokenManager.getAccessToken();
+        String response;
+
+        try {
+            response = sendRequest(endpoint, "GET", null, token);
+        } catch (Exception e) {
+            Log.e("ApiClient", "Error in GET request", e);
+            throw e;
+        }
+
+        if (response.contains("Unauthorized")) {
+            token = tokenManager.refreshAccessToken();
+            if (token != null) {
+                response = sendRequest(endpoint, "GET", null, token); // retry
+            } else {
+                return null; // user logged out
+            }
+        }
+        return response;
     }
 
-    // 🔹 POST request
-    public static String postRequest(String endpoint, String jsonInput, String token) throws Exception {
-        return sendRequest(endpoint, "POST", jsonInput, token);
+    // 🔹 POST request (with auto refresh)
+    public static String postRequest(Context context, String endpoint, String jsonInput) throws Exception {
+        TokenManager tokenManager = new TokenManager(context);
+        String token = tokenManager.getAccessToken();
+        String response;
+        try {
+            response = sendRequest(endpoint, "POST", jsonInput, token);
+        } catch (Exception e) {
+            Log.e("ApiClient", "Error in POST request", e);
+            throw e;
+        }
+
+        if (response != null && response.contains("Unauthorized")) {
+            token = tokenManager.refreshAccessToken();
+            if (token != null) {
+                response = sendRequest(endpoint, "POST", jsonInput, token);
+            } else {
+                return null;
+            }
+        }
+        return response;
     }
 
-    // 🔹 PUT request
-    public static String putRequest(String endpoint, String jsonInput, String token) throws Exception {
-        return sendRequest(endpoint, "PUT", jsonInput, token);
+    // 🔹 PUT request (with auto refresh)
+    public static String putRequest(Context context, String endpoint, String jsonInput) throws Exception {
+        TokenManager tokenManager = new TokenManager(context);
+        String token = tokenManager.getAccessToken();
+        String response;
+        try {
+            response = sendRequest(endpoint, "PUT", jsonInput, token);
+        } catch (Exception e) {
+            Log.e("ApiClient", "Error in PUT request", e);
+            throw e;
+        }
+
+        if (response.contains("Unauthorized")) {
+            token = tokenManager.refreshAccessToken();
+            if (token != null) {
+                response = sendRequest(endpoint, "PUT", jsonInput, token);
+            } else {
+                return null;
+            }
+        }
+        return response;
     }
 
-    // 🔹 PATCH request
-    public static String patchRequest(String endpoint, String jsonInput, String token) throws Exception {
-        return sendRequest(endpoint, "PATCH", jsonInput, token);
+    // 🔹 PATCH request (with auto refresh)
+    public static String patchRequest(Context context, String endpoint, String jsonInput) throws Exception {
+        TokenManager tokenManager = new TokenManager(context);
+        String token = tokenManager.getAccessToken();
+        Log.d("ApiClient", "Token: " + token);
+        String response;
+        try {
+            response = sendRequest(endpoint, "PATCH", jsonInput, token);
+        } catch (Exception e) {
+            Log.e("ApiClient", "Error in PATCH request", e);
+            throw e;
+        }
+        Log.d("ApiClient", "Response: " + response);
+
+        if (response.contains("Authentication required")) {
+            Log.d("ApiClient", "Unauthorized");
+            token = tokenManager.refreshAccessToken();
+            if (token != null) {
+                response = sendRequest(endpoint, "PATCH", jsonInput, token);
+                Log.d("ApiClient", "Refreshed token: " + token);
+            } else {
+                return null;
+            }
+        }
+        return response;
     }
 
-    // 🔹 DELETE request
-    public static String deleteRequest(String endpoint, String token) throws Exception {
-        return sendRequest(endpoint, "DELETE", null, token);
+    // 🔹 DELETE request (with auto refresh)
+    public static String deleteRequest(Context context, String endpoint) throws Exception {
+        TokenManager tokenManager = new TokenManager(context);
+        String token = tokenManager.getAccessToken();
+        String response;
+        try {
+            response = sendRequest(endpoint, "DELETE", null, token);
+        } catch (Exception e) {
+            Log.e("ApiClient", "Error in DELETE request", e);
+            throw e;
+        }
+
+        if (response.contains("Unauthorized")) {
+            token = tokenManager.refreshAccessToken();
+            if (token != null) {
+                response = sendRequest(endpoint, "DELETE", null, token);
+            } else {
+                return null;
+            }
+        }
+        return response;
     }
 }

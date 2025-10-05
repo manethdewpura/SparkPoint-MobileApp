@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
                 req.put("Username", username);
                 req.put("Password", password);
 
-                String response = ApiClient.postRequest(Constants.LOGIN_URL, req.toString(), null);
+                String response = ApiClient.postRequest(LoginActivity.this, Constants.LOGIN_URL, req.toString());
 
                 JSONObject res = new JSONObject(response);
 

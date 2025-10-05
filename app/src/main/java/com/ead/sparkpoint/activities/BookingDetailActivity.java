@@ -51,7 +51,7 @@ public class BookingDetailActivity extends AppCompatActivity {
     private void loadBookingDetails() {
         new Thread(() -> {
             try {
-                String response = ApiClient.getRequest(Constants.GET_BOOKING_BY_ID_URL + bookingId, appUser.getAccessToken());
+                String response = ApiClient.getRequest(BookingDetailActivity.this, Constants.GET_BOOKING_BY_ID_URL + bookingId);
                 bookingJson = new JSONObject(response);
 
                 runOnUiThread(() -> {
@@ -94,7 +94,7 @@ public class BookingDetailActivity extends AppCompatActivity {
                 req.put("ReservationTime", bookingJson.getString("reservationTime"));
                 req.put("Status", newStatus);
 
-                String response = ApiClient.patchRequest(Constants.UPDATE_BOOKING_STATUS_URL + bookingId, req.toString(), appUser.getAccessToken());
+                String response = ApiClient.patchRequest(BookingDetailActivity.this, Constants.UPDATE_BOOKING_STATUS_URL + bookingId, req.toString());
 
                 runOnUiThread(() -> {
                     Toast.makeText(this, response, Toast.LENGTH_SHORT).show();

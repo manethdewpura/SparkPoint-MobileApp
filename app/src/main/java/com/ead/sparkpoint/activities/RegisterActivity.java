@@ -56,7 +56,7 @@ public class RegisterActivity extends AppCompatActivity {
                 req.put("NIC", nic);
                 req.put("Phone", phone);
 
-                String response = ApiClient.postRequest(Constants.REGISTER_EV_OWNER_URL, req.toString(), null);
+                String response = ApiClient.postRequest(RegisterActivity.this, Constants.REGISTER_EV_OWNER_URL, req.toString());
 
                 runOnUiThread(() -> {
                     Toast.makeText(RegisterActivity.this, "Registered Successfully", Toast.LENGTH_SHORT).show();

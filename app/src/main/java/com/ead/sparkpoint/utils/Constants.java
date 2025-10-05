@@ -7,14 +7,16 @@ public class Constants {
 
     // Auth & Users
     public static final String LOGIN_URL = "/auth/login";
+
+    public static final String LOGOUT_URL = "/auth/logout";
     public static final String REGISTER_EV_OWNER_URL = "/evowners/register";
     public static final String REFRESH_TOKEN_URL = "/auth/refresh";
 
     public static final String UPDATE_EV_OWNER_URL = "/evowners/update";
     public static final String DEACTIVATE_EV_OWNER_URL = "/evowners/deactivate";
     // Bookings
-    public static final String GET_BOOKING_BY_ID_URL = "/bookings/"; // append bookingId
-    public static final String UPDATE_BOOKING_STATUS_URL = "/bookings/status/"; // append bookingId
+    public static final String GET_BOOKING_BY_ID_URL = "/bookings/";
+    public static final String UPDATE_BOOKING_STATUS_URL = "/bookings/status/";
 
 
 
