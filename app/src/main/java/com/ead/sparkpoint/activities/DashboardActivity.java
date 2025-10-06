@@ -81,8 +81,8 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         setupMenuButton();
 
         // Fetch counts
-        fetchReservationCount(Constants.PENDING_BOOKINGS_URL, tvPending, "Pending Reservations: ");
-        fetchReservationCount(Constants.UPCOMING_BOOKINGS_URL, tvConfirmed, "Future Reservations: ");
+        fetchReservationCount(Constants.PENDING_BOOKINGS_URL, tvPending);
+        fetchReservationCount(Constants.UPCOMING_BOOKINGS_URL, tvConfirmed);
 
         // Setup Map
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -148,7 +148,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     // Fetch reservation counts (Pending / Confirmed)
-    private void fetchReservationCount(String urlString, TextView textView, String label) {
+    private void fetchReservationCount(String urlString, TextView textView) {
         executor.execute(() -> {
             int count = 0;
             try {
@@ -160,7 +160,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             int finalCount = count;
-            handler.post(() -> textView.setText(label + finalCount));
+            handler.post(() -> textView.setText(String.valueOf(finalCount)));
         });
     }
 
