@@ -40,6 +40,16 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
         }
         
         // User is authenticated, proceed with normal flow
+        // Route by role: if Station Operator (roleId == 2), go to operator home
+        AppUserDAO userDAO = new AppUserDAO(this);
+        AppUser currentUser = userDAO.getUser();
+        if (currentUser != null && Integer.valueOf(2).equals(currentUser.getRoleId())) {
+            Intent operatorHome = new Intent(this, OperatorHomeActivity.class);
+            operatorHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(operatorHome);
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_main);
 
         // Find the bottom navigation view

@@ -70,7 +70,9 @@ public class ApiClient {
             throw e;
         }
 
-        if (response.contains("Unauthorized")) {
+        if (response.contains("Unauthorized") ||
+                response.contains("expired") ||
+                response.contains("invalid")) {
             token = tokenManager.refreshAccessToken();
             if (token != null) {
                 response = sendRequest(endpoint, "GET", null, token); // retry
@@ -78,6 +80,7 @@ public class ApiClient {
                 return null; // user logged out
             }
         }
+
         return response;
     }
 

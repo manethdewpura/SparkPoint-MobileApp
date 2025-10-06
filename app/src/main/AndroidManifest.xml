@@ -75,6 +75,9 @@
         <activity
             android:name=".activities.ReservationListActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.OperatorBookingsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
