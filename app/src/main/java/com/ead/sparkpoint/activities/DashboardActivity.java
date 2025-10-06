@@ -14,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.ead.sparkpoint.R;
+import com.ead.sparkpoint.database.AppUserDAO;
+import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -43,7 +45,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
 
     private static final int LOCATION_REQUEST_CODE = 101;
 
-    TextView tvPending, tvConfirmed;
+    TextView tvPending, tvConfirmed, tvWelcomeUser, tvUserEmail, tvUserNic;
     GoogleMap mMap;
     FusedLocationProviderClient fusedLocationClient;
     double userLat, userLon;
@@ -55,11 +57,25 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Guard: redirect station operators away from EV owner dashboard
+        AppUserDAO dao = new AppUserDAO(this);
+        AppUser u = dao.getUser();
+        if (u != null && Integer.valueOf(2).equals(u.getRoleId())) {
+            startActivity(new Intent(this, OperatorHomeActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_dashboard);
 
 
         tvPending = findViewById(R.id.tvPendingCount);
         tvConfirmed = findViewById(R.id.tvConfirmedCount);
+        tvWelcomeUser = findViewById(R.id.tvWelcomeUser);
+        tvUserEmail = findViewById(R.id.tvUserEmail);
+        tvUserNic = findViewById(R.id.tvUserNic);
+
+        // Load and display user information
+        loadUserInfo();
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -72,22 +88,24 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         // Setup menu button
         setupMenuButton();
 
-        //Button navigation to ReservationListActivity
-//        MaterialButton btnReservationList = findViewById(R.id.btnReservationList);
-//        btnReservationList.setOnClickListener(v -> {
-//            Intent intent = new Intent(DashboardActivity.this, ReservationListActivity.class);
-//            startActivity(intent);
-//        });
-
         // Fetch counts
-        fetchReservationCount(Constants.PENDING_BOOKINGS_URL, tvPending, "Pending Reservations: ");
-        fetchReservationCount(Constants.UPCOMING_BOOKINGS_URL, tvConfirmed, "Future Reservations: ");
+        fetchReservationCount(Constants.PENDING_BOOKINGS_URL, tvPending);
+        fetchReservationCount(Constants.UPCOMING_BOOKINGS_URL, tvConfirmed);
 
         // Setup Map
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
+        }
+
+        // View Available Stations button
+        MaterialButton btnViewStations = findViewById(R.id.btnViewStations);
+        if (btnViewStations != null) {
+            btnViewStations.setOnClickListener(v -> {
+                Intent intent = new Intent(DashboardActivity.this, StationListActivity.class);
+                startActivity(intent);
+            });
         }
     }
 
@@ -138,7 +156,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     // Fetch reservation counts (Pending / Confirmed)
-    private void fetchReservationCount(String urlString, TextView textView, String label) {
+    private void fetchReservationCount(String urlString, TextView textView) {
         executor.execute(() -> {
             int count = 0;
             try {
@@ -150,7 +168,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
             }
 
             int finalCount = count;
-            handler.post(() -> textView.setText(label + finalCount));
+            handler.post(() -> textView.setText(String.valueOf(finalCount)));
         });
     }
 
@@ -250,6 +268,20 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         }
     }
     
+    /**
+     * Load and display user information
+     */
+    private void loadUserInfo() {
+        AppUserDAO dao = new AppUserDAO(this);
+        AppUser user = dao.getUser();
+
+        if (user != null) {
+            tvWelcomeUser.setText("Welcome " + user.getUsername() + "!");
+            tvUserEmail.setText("Email: " + user.getEmail());
+            tvUserNic.setText("NIC: " + user.getNic());
+        }
+    }
+
     /**
      * Logout user from the app
      */

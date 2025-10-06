@@ -1,51 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:gravity="center"
     android:orientation="vertical"
-    android:background="@color/dark_blue"
-    android:padding="24dp">
+    android:background="@color/dark_blue">
 
-    <!-- Title -->
-    <TextView
-        android:id="@+id/tvDetails"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/confirm_QR"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/orange"
+    <!-- Top App Bar -->
+    <include
+        android:id="@+id/topAppBarContainer"
+        layout="@layout/top_app_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:gravity="center"
-        android:paddingBottom="24dp"/>
+        android:orientation="vertical"
+        android:padding="24dp">
 
-    <!-- QR Code Container -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="wrap_content"
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm_QR"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/orange"
+            android:gravity="center"
+            android:paddingBottom="24dp"/>
+
+        <!-- QR Code Container -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            android:background="@color/white">
+
+            <ImageView
+                android:id="@+id/qrImage"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:contentDescription="@string/qr_description"
+                android:scaleType="centerInside"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Optional instruction -->
+        <TextView
+            android:id="@+id/tvInstructions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hint_qr"
+            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        android:background="@color/white">
+        android:background="@color/white"
+        app:itemIconTint="@color/bottom_nav_item_color"
+        app:itemTextColor="@color/bottom_nav_item_color"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_navigation_menu" />
 
-        <ImageView
-            android:id="@+id/qrImage"
-            android:layout_width="250dp"
-            android:layout_height="250dp"
-            android:contentDescription="@string/qr_description"
-            android:scaleType="centerInside"/>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Optional instruction -->
-    <TextView
-        android:id="@+id/tvInstructions"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hint_qr"
-        android:textSize="14sp"
-        android:textColor="@color/white"
-        android:gravity="center"
-        android:layout_marginTop="16dp"/>
 </LinearLayout>

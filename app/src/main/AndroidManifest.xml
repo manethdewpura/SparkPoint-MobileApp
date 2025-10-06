@@ -50,7 +50,7 @@
             android:name=".activities.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".activities.EVOwnerHomeActivity"
+            android:name=".activities.StationListActivity"
             android:exported="true" />
         <activity
             android:name=".activities.OperatorHomeActivity"

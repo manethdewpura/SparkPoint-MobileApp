@@ -1,38 +1,47 @@
 package com.ead.sparkpoint.activities;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.activity.EdgeToEdge;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.ead.sparkpoint.R;
+import com.ead.sparkpoint.adapters.StationAdapter;
+import com.ead.sparkpoint.utils.ApiClient;
+import com.ead.sparkpoint.utils.Constants;
 import com.ead.sparkpoint.utils.TokenManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.qrcode.QRCodeWriter;
 
-public class QRCodeActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
-    private ImageView qrImage;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class StationListActivity extends AppCompatActivity implements StationAdapter.OnStationActionListener, NavigationBarView.OnItemSelectedListener {
+
+    private RecyclerView recyclerStations;
+    private StationAdapter adapter;
+    private final List<StationAdapter.StationItem> stations = new ArrayList<>();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_qrcode);
+        setContentView(R.layout.activity_station_list);
 
-        qrImage = findViewById(R.id.qrImage);
+        recyclerStations = findViewById(R.id.recyclerStations);
+        recyclerStations.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new StationAdapter(stations, this);
+        recyclerStations.setAdapter(adapter);
 
         // Setup bottom navigation
         BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
@@ -42,29 +51,38 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
         // Setup menu button
         setupMenuButton();
 
-        String bookingId = getIntent().getStringExtra("bookingId");
-
-        String qrData = bookingId;
-
-        generateQRCode(qrData);
+        loadStations();
     }
 
-    private void generateQRCode(String data) {
-        QRCodeWriter writer = new QRCodeWriter();
-        try {
-            int size = 512;
-            com.google.zxing.common.BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size);
-            Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565);
-
-            for (int x = 0; x < size; x++) {
-                for (int y = 0; y < size; y++) {
-                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
+    private void loadStations() {
+        new Thread(() -> {
+            try {
+                String response = ApiClient.getRequest(StationListActivity.this, Constants.GET_NEARBY_STATIONS_URL);
+                JSONArray arr = new JSONArray(response);
+                stations.clear();
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+                    String id = obj.getString("id");
+                    String name = obj.getString("name");
+                    String address = obj.optString("address", "");
+                    String phone = obj.optString("contactPhone", "");
+                    stations.add(new StationAdapter.StationItem(id, name, address, phone));
                 }
+                runOnUiThread(() -> adapter.notifyDataSetChanged());
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(this, "Failed to load stations", Toast.LENGTH_SHORT).show());
             }
-            qrImage.setImageBitmap(bmp);
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }
+        }).start();
+    }
+
+    @Override
+    public void onAddBooking(StationAdapter.StationItem station) {
+        Intent intent = new Intent(this, ReservationActivity.class);
+        intent.putExtra("lockStation", true);
+        intent.putExtra("stationId", station.id);
+        intent.putExtra("stationName", station.name);
+        startActivity(intent);
     }
 
     @Override
@@ -128,3 +146,6 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
         }).start();
     }
 }
+
+
+
