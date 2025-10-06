@@ -1,5 +1,6 @@
 package com.ead.sparkpoint.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -10,11 +11,14 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,8 +26,11 @@ import android.widget.Toast;
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.TokenManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,7 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class ReservationActivity extends AppCompatActivity {
+public class ReservationActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
 
     private Spinner spinnerStations, spinnerSlots;
     private EditText etDate, etNumSlots;
@@ -79,6 +86,14 @@ public class ReservationActivity extends AppCompatActivity {
         btnConfirm = findViewById(R.id.btnConfirm);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Setup bottom navigation
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setSelectedItemId(R.id.nav_bookings);
+        bottomNavigation.setOnItemSelectedListener(this);
+        
+        // Setup menu button
+        setupMenuButton();
 
         // Check if update mode or locked station from station list
         Intent intent = getIntent();
@@ -439,6 +454,67 @@ public class ReservationActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> Toast.makeText(this, "Update Failed", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        
+        if (itemId == R.id.nav_home) {
+            Intent homeIntent = new Intent(this, DashboardActivity.class);
+            startActivity(homeIntent);
+            return true;
+        } else if (itemId == R.id.nav_bookings) {
+            // Already on bookings; consume the event to keep highlight
+            return true;
+        } else if (itemId == R.id.nav_profile) {
+            Intent profileIntent = new Intent(this, ProfileActivity.class);
+            startActivity(profileIntent);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Setup the menu button in the top app bar
+     */
+    private void setupMenuButton() {
+        ImageButton menuButton = findViewById(R.id.menuButton);
+        if (menuButton != null) {
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, menuButton);
+                popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
+                
+                popup.setOnMenuItemClickListener(item -> {
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.menu_logout) {
+                        logoutUser();
+                        return true;
+                    }
+                    return false;
+                });
+                
+                popup.show();
+            });
+        }
+    }
+    
+    /**
+     * Logout user from the app
+     */
+    private void logoutUser() {
+        new Thread(() -> {
+            try {
+                TokenManager tokenManager = new TokenManager(this);
+                tokenManager.logoutUser();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    finish();
+                });
             }
         }).start();
     }

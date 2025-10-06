@@ -2,8 +2,12 @@ package com.ead.sparkpoint.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,6 +17,9 @@ import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.adapters.StationAdapter;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.TokenManager;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,7 +27,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StationListActivity extends AppCompatActivity implements StationAdapter.OnStationActionListener {
+public class StationListActivity extends AppCompatActivity implements StationAdapter.OnStationActionListener, NavigationBarView.OnItemSelectedListener {
 
     private RecyclerView recyclerStations;
     private StationAdapter adapter;
@@ -35,6 +42,14 @@ public class StationListActivity extends AppCompatActivity implements StationAda
         recyclerStations.setLayoutManager(new LinearLayoutManager(this));
         adapter = new StationAdapter(stations, this);
         recyclerStations.setAdapter(adapter);
+
+        // Setup bottom navigation
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setSelectedItemId(R.id.nav_bookings);
+        bottomNavigation.setOnItemSelectedListener(this);
+        
+        // Setup menu button
+        setupMenuButton();
 
         loadStations();
     }
@@ -68,6 +83,67 @@ public class StationListActivity extends AppCompatActivity implements StationAda
         intent.putExtra("stationId", station.id);
         intent.putExtra("stationName", station.name);
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        
+        if (itemId == R.id.nav_home) {
+            Intent homeIntent = new Intent(this, DashboardActivity.class);
+            startActivity(homeIntent);
+            return true;
+        } else if (itemId == R.id.nav_bookings) {
+            // Already on bookings; consume the event to keep highlight
+            return true;
+        } else if (itemId == R.id.nav_profile) {
+            Intent profileIntent = new Intent(this, ProfileActivity.class);
+            startActivity(profileIntent);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Setup the menu button in the top app bar
+     */
+    private void setupMenuButton() {
+        ImageButton menuButton = findViewById(R.id.menuButton);
+        if (menuButton != null) {
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, menuButton);
+                popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
+                
+                popup.setOnMenuItemClickListener(item -> {
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.menu_logout) {
+                        logoutUser();
+                        return true;
+                    }
+                    return false;
+                });
+                
+                popup.show();
+            });
+        }
+    }
+    
+    /**
+     * Logout user from the app
+     */
+    private void logoutUser() {
+        new Thread(() -> {
+            try {
+                TokenManager tokenManager = new TokenManager(this);
+                tokenManager.logoutUser();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    finish();
+                });
+            }
+        }).start();
     }
 }
 
