@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -85,7 +86,7 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
                     long diffHours = (reservationMillis - nowMillis) / (1000 * 60 * 60);
                     if (diffHours < 12) {
                         Toast.makeText(ReservationListActivity.this,
-                                "Time exceeds for update. Updates must be 12+ hours before.",
+                                "Reservation can only be updated at least 12 hours before.",
                                 Toast.LENGTH_LONG).show();
                         return;
                     }
@@ -162,12 +163,16 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
         btnUpcoming.setOnClickListener(v -> {
             setActiveButton(btnUpcoming);
-            loadReservations(Constants.UPCOMING_BOOKINGS_URL );
+            String today = getTodayDate();
+            String url = Constants.GET_BOOKINGS_URL + "?FromDate=" + today;
+            loadReservations(url);
         });
 
         btnPast.setOnClickListener(v -> {
             setActiveButton(btnPast);
-            loadReservations(Constants.PAST_BOOKINGS_URL );
+            String today = getTodayDate();
+            String url = Constants.GET_BOOKINGS_URL + "?ToDate=" + today;
+            loadReservations(url);
         });
 
         reservationLauncher = registerForActivityResult(
@@ -180,6 +185,11 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
                 }
         );
 
+    }
+
+    private String getTodayDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(new Date());
     }
 
     private void setActiveButton(Button activeButton) {
