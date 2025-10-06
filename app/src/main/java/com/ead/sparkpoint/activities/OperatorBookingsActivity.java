@@ -1,6 +1,7 @@
 package com.ead.sparkpoint.activities;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.app.DatePickerDialog;
 import android.view.View;
@@ -14,8 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.ead.sparkpoint.R;
+import com.ead.sparkpoint.database.AppUserDAO;
+import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.TokenManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -58,11 +62,24 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         bottomNavigation.setSelectedItemId(R.id.nav_operator_bookings);
         bottomNavigation.setOnItemSelectedListener(this);
 
-        // Load today's bookings by default
+// Load today's bookings by default
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         tvFilterDate.setText("Bookings for " + today);
         btnPickDate.setOnClickListener(v -> openDatePicker(today));
+
+// ✅ Add these lines for debugging
+        AppUserDAO dao = new AppUserDAO(this);
+        AppUser currentUser = dao.getUser();
+        if (currentUser != null) {
+            Log.d("TokenCheck", "AccessToken=" + currentUser.getAccessToken());
+            Log.d("TokenCheck", "RoleId=" + currentUser.getRoleId());
+        } else {
+            Log.d("TokenCheck", "No user found in local DB");
+        }
+
+// Then fetch bookings
         fetchBookings(today);
+
     }
 
     private void openDatePicker(String current) {
@@ -205,6 +222,24 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         }
         return false;
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // optional: verify token validity or silently refresh
+        new Thread(() -> {
+            TokenManager tm = new TokenManager(this);
+            String token = tm.getAccessToken();
+            if (token == null || token.trim().isEmpty()) {
+                tm.logoutUser();
+            } else {
+                // optional: silent refresh to ensure fresh token
+                tm.refreshAccessToken();
+            }
+        }).start();
+    }
+
 }
 
 
