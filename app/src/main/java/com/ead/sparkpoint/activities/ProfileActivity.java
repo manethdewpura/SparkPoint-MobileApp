@@ -94,11 +94,10 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             etNic.setEnabled(false);
             etPhone.setEnabled(false);
 
-            // disable action buttons
-            btnEdit.setEnabled(false);
-            btnSave.setEnabled(false);
-            btnDeactivate.setEnabled(false);
-            btnDeactivate.setVisibility(android.view.View.GONE);
+            // Completely hide Edit, Save, and Deactivate buttons
+            btnEdit.setVisibility(android.view.View.GONE);
+            btnSave.setVisibility(android.view.View.GONE);
+            findViewById(R.id.btnDeactivate).setVisibility(android.view.View.GONE);
         }
 
         btnEdit.setOnClickListener(v -> setEditable(true));

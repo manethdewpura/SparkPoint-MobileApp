@@ -1,6 +1,7 @@
 package com.ead.sparkpoint.activities;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,10 +66,20 @@ public class BookingDetailActivity extends AppCompatActivity {
                         tvTimeSlot.setText("Time Slot: " + bookingJson.optString("timeSlotDisplay"));
                         tvStatus.setText("Status: " + bookingJson.optString("status"));
 
-                        // Enable/disable buttons based on status
-                        String status = bookingJson.optString("status");
-                        btnStart.setEnabled("Confirmed".equalsIgnoreCase(status));
-                        btnComplete.setEnabled("In Progress".equalsIgnoreCase(status));
+                        // Handle button visibility based on status
+                        String status = bookingJson.optString("status", "");
+
+                        if ("Confirmed".equalsIgnoreCase(status)) {
+                            btnStart.setVisibility(View.VISIBLE);
+                            btnComplete.setVisibility(View.GONE);
+                        } else if ("In Progress".equalsIgnoreCase(status)) {
+                            btnStart.setVisibility(View.GONE);
+                            btnComplete.setVisibility(View.VISIBLE);
+                        } else {
+                            // Completed, Cancelled, or any other status
+                            btnStart.setVisibility(View.GONE);
+                            btnComplete.setVisibility(View.GONE);
+                        }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
