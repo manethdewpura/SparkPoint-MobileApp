@@ -16,6 +16,7 @@ public class Constants {
     public static final String DEACTIVATE_EV_OWNER_URL = "/evowners/deactivate";
     // Bookings
     public static final String GET_BOOKING_BY_ID_URL = "/bookings/";
+    public static final String GET_ALL_BOOKINGS_FOR_OPERATOR = "/bookings/";
     public static final String UPDATE_BOOKING_STATUS_URL = "/bookings/status/";
 
 
