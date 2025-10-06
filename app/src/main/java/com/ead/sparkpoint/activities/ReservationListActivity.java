@@ -41,7 +41,7 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     private List<Reservation> reservationList;
     private ReservationAdapter adapter;
     private Button btnCurrent, btnUpcoming, btnPast;
-    private FloatingActionButton btnAddReservation;
+    // Removed add reservation FAB; flow now goes via stations list
     private ActivityResultLauncher<Intent> reservationLauncher;
 
     @Override
@@ -52,7 +52,6 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
         btnCurrent = findViewById(R.id.btnCurrent);
         btnUpcoming = findViewById(R.id.btnUpcoming);
         btnPast = findViewById(R.id.btnPast);
-        btnAddReservation = findViewById(R.id.btnAddReservation);
 
         // Setup bottom navigation
         BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
@@ -78,6 +77,22 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
             @Override
             public void onUpdate(Reservation reservation) {
+                // Enforce 12-hour rule before allowing update
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
+                    long reservationMillis = sdf.parse(reservation.getReservationTime()).getTime();
+                    long nowMillis = System.currentTimeMillis();
+                    long diffHours = (reservationMillis - nowMillis) / (1000 * 60 * 60);
+                    if (diffHours < 12) {
+                        Toast.makeText(ReservationListActivity.this,
+                                "Time exceeds for update. Updates must be 12+ hours before.",
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 // Launch ReservationActivity in update mode
                 Intent intent = new Intent(ReservationListActivity.this, ReservationActivity.class);
                 intent.putExtra("mode", "update");
@@ -164,11 +179,6 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
                     }
                 }
         );
-
-        btnAddReservation.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ReservationActivity.class);
-            reservationLauncher.launch(intent);
-        });
 
     }
 

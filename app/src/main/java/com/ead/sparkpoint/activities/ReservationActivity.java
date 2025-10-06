@@ -80,8 +80,19 @@ public class ReservationActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Check if update mode
+        // Check if update mode or locked station from station list
         Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra("lockStation", false)) {
+            // Prefill and lock station from stations list
+            String lockedStationId = intent.getStringExtra("stationId");
+            String lockedStationName = intent.getStringExtra("stationName");
+            if (lockedStationId != null) {
+                selectedStationId = lockedStationId;
+            }
+            // Load stations to populate spinner and then lock selection
+            // Device location will trigger loadStations → preselect when station list loads
+        }
+
         if (intent != null && "update".equals(intent.getStringExtra("mode"))) {
             isUpdateMode = true;
             bookingId = intent.getStringExtra("bookingId");
@@ -89,6 +100,8 @@ public class ReservationActivity extends AppCompatActivity {
 
             // Fetch booking details from server
             fetchBookingDetails(bookingId);
+            // Lock station selection in update flow
+            spinnerStations.setEnabled(false);
         }
 
         // set today's date if not update
@@ -241,8 +254,13 @@ public class ReservationActivity extends AppCompatActivity {
                         public void onNothingSelected(AdapterView<?> parent) {}
                     });
 
-                    // Prefill spinner if in update mode
-                    if (isUpdateMode && selectedStationId != null) prefillStationSpinner();
+                    // Prefill spinner if in update mode or locked station
+                    if ((isUpdateMode || getIntent().getBooleanExtra("lockStation", false)) && selectedStationId != null) {
+                        prefillStationSpinner();
+                        if (getIntent().getBooleanExtra("lockStation", false)) {
+                            spinnerStations.setEnabled(false);
+                        }
+                    }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -391,6 +409,7 @@ public class ReservationActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Booking Successful!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
+                    startActivity(new Intent(this, ReservationListActivity.class));
                     finish();
                 });
             } catch (Exception e) {
@@ -414,6 +433,7 @@ public class ReservationActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Booking Updated Successfully!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
+                    startActivity(new Intent(this, ReservationListActivity.class));
                     finish();
                 });
             } catch (Exception e) {
