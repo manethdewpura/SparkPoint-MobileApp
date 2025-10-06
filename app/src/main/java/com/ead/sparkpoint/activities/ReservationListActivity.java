@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.adapters.ReservationAdapter;
+import com.ead.sparkpoint.database.AppUserDAO;
+import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.models.Reservation;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
@@ -48,6 +50,14 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Guard: redirect station operators away from EV owner bookings list
+        AppUserDAO dao = new AppUserDAO(this);
+        AppUser u = dao.getUser();
+        if (u != null && Integer.valueOf(2).equals(u.getRoleId())) {
+            startActivity(new Intent(this, OperatorBookingsActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_reservation_list);
 
         btnCurrent = findViewById(R.id.btnCurrent);

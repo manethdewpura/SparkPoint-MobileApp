@@ -57,6 +57,14 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Guard: redirect station operators away from EV owner dashboard
+        AppUserDAO dao = new AppUserDAO(this);
+        AppUser u = dao.getUser();
+        if (u != null && Integer.valueOf(2).equals(u.getRoleId())) {
+            startActivity(new Intent(this, OperatorHomeActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_dashboard);
 
 
