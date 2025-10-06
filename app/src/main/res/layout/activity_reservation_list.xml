@@ -86,18 +86,7 @@
         android:clipToPadding="false"
         android:elevation="2dp" />
 
-    <!-- Floating Action Button for Add Booking -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btnAddReservation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:contentDescription="@string/add_new_reservation"
-        app:backgroundTint="@color/orange"
-        app:srcCompat="@android:drawable/ic_input_add"
-        app:elevation="8dp"/>
+    
     </RelativeLayout>
 
     <!-- Bottom Navigation -->

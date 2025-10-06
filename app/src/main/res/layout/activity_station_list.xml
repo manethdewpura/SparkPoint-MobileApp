@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark_blue"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Active Stations"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:paddingBottom="8dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerStations"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>
+
+
+
