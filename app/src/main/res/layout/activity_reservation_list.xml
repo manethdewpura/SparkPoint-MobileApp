@@ -17,12 +17,14 @@
         android:layout_weight="1"
         android:padding="16dp">
 
-    <!-- Button group for filters -->
+    <!-- Button group for date filters with status filter button on the right -->
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/btnGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
+        android:layout_toStartOf="@+id/btnFilterStatus"
+        android:layout_alignParentStart="true"
         app:checkedButton="@id/btnCurrent"
         app:singleSelection="true">
 
@@ -74,6 +76,20 @@
             app:iconTint="@color/dark_blue"
             app:iconPadding="4dp"/>
     </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- Status filter button -->
+        <ImageButton
+            android:id="@+id/btnFilterStatus"
+            android:layout_width="40dp"
+            android:layout_height="45dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@id/btnGroup"
+            android:layout_marginStart="8dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Filter by status"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/search"/>
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
