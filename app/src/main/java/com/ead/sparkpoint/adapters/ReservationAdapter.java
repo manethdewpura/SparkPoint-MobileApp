@@ -32,6 +32,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     }
 
     public ReservationAdapter(List<Reservation> reservationList, Context context, OnReservationActionListener listener) {
+        // Initialize adapter with data set, context, and action callbacks
         this.reservationList = reservationList;
         this.context = context;
         this.listener = listener;
@@ -40,15 +41,17 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Inflate reservation item layout and create a ViewHolder
         View v = LayoutInflater.from(context).inflate(R.layout.item_reservation, parent, false);
         return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        // Bind reservation data to item views and wire action buttons
         Reservation r = reservationList.get(position);
         holder.tvStationName.setText(r.getStationName());
-        String dateTime = r.getReservationTime();   // e.g. "2025-10-03T00:00:00Z"
+        String dateTime = r.getReservationTime();   
         OffsetDateTime odt = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             odt = OffsetDateTime.parse(dateTime);
@@ -103,6 +106,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
 
     @Override
     public int getItemCount() {
+        // Return current number of reservations to display
         return reservationList.size();
     }
 
@@ -111,6 +115,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         Button btnViewQR, btnUpdate, btnDelete;
 
         public ViewHolder(View itemView) {
+            // Resolve and cache view references for faster binding
             super(itemView);
             tvStationName = itemView.findViewById(R.id.tvStationName);
             tvDate = itemView.findViewById(R.id.tvDate);

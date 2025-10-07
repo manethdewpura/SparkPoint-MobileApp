@@ -76,6 +76,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Initialize reservation form, detect mode, wire UI and navigation
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reservation);
 
@@ -105,7 +106,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 selectedStationId = lockedStationId;
             }
             // Load stations to populate spinner and then lock selection
-            // Device location will trigger loadStations → preselect when station list loads
+            // Device location will trigger loadStations preselect when station list loads
         }
 
         if (intent != null && "update".equals(intent.getStringExtra("mode"))) {
@@ -155,6 +156,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void checkLocationPermission() {
+        // Request location permissions or proceed to fetch device location
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -167,6 +169,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        // Handle location permission result and load stations if granted
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -178,6 +181,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void getDeviceLocation() {
+        // Obtain last known device location and trigger station loading
         try {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -207,6 +211,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
 
     private void fetchBookingDetails(String bookingId) {
+        // Retrieve existing booking details and prefill form in update mode
         new Thread(() -> {
             try {
                 String url = Constants.UPDATE_BOOKINGS_URL.replace("{bookingid}", bookingId);
@@ -239,6 +244,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void loadStations(double latitude, double longitude) {
+        // Fetch nearby stations based on device location and bind to spinner
         new Thread(() -> {
             try {
                 // Fetch stations
@@ -290,6 +296,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void prefillStationSpinner() {
+        // Preselect station spinner item based on selectedStationId
         for (int i = 0; i < stationNames.size(); i++) {
             String stationName = stationNames.get(i);
             if (selectedStationId.equals(stationMap.get(stationName))) {
@@ -300,6 +307,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void loadSlots(String stationId, String date) {
+        // Fetch time slot availability for selected station and date and bind to spinner
         spinnerSlots.setEnabled(false);
         new Thread(() -> {
             try {
@@ -365,6 +373,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void showSummaryDialog() {
+        // Validate inputs and show styled summary dialog before submit/update
         String numSlotsStr = etNumSlots.getText().toString().trim();
         if (numSlotsStr.isEmpty()) {
             Toast.makeText(this, "Enter number of slots", Toast.LENGTH_SHORT).show();
@@ -418,6 +427,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void submitBooking(String slot, int Noslots) {
+        // Submit a new booking to the server and navigate back on success
         new Thread(() -> {
             try {
                 JSONObject body = new JSONObject();
@@ -441,6 +451,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     }
 
     private void updateBooking(String slot, int Noslots) {
+        // Update an existing booking with new details on the server
         new Thread(() -> {
             try {
                 JSONObject body = new JSONObject();
@@ -466,6 +477,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle bottom navigation item taps and navigate between screens
         int itemId = item.getItemId();
         
         if (itemId == R.id.nav_home) {
@@ -473,7 +485,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
             startActivity(homeIntent);
             return true;
         } else if (itemId == R.id.nav_bookings) {
-            // Already on bookings; consume the event to keep highlight
+            // Already on bookings screen
             return true;
         } else if (itemId == R.id.nav_profile) {
             Intent profileIntent = new Intent(this, ProfileActivity.class);
@@ -483,11 +495,9 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
         
         return false;
     }
-    
-    /**
-     * Setup the menu button in the top app bar
-     */
+
     private void setupMenuButton() {
+        // Wire up the top app bar menu and handle logout action
         ImageButton menuButton = findViewById(R.id.menuButton);
         if (menuButton != null) {
             menuButton.setOnClickListener(v -> {
@@ -507,11 +517,9 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
             });
         }
     }
-    
-    /**
-     * Logout user from the app
-     */
+
     private void logoutUser() {
+        // Perform logout in background and finish the activity when done
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);

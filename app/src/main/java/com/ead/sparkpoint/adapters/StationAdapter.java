@@ -37,6 +37,7 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
     private final OnStationActionListener listener;
 
     public StationAdapter(List<StationItem> stations, OnStationActionListener listener) {
+        // Initialize adapter with station list and action listener
         this.stations = stations;
         this.listener = listener;
     }
@@ -44,12 +45,14 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Inflate station item layout and create a ViewHolder
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_station, parent, false);
         return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        // Bind station data to item views and wire Add Booking action
         StationItem s = stations.get(position);
         holder.tvName.setText(s.name);
         holder.tvAddress.setText("Address: " + s.address);
@@ -59,6 +62,7 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
 
     @Override
     public int getItemCount() {
+        // Return the number of stations to display
         return stations.size();
     }
 
@@ -67,6 +71,7 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
         Button btnAddBooking;
 
         ViewHolder(@NonNull View itemView) {
+            // Resolve and cache view references for faster binding
             super(itemView);
             tvName = itemView.findViewById(R.id.tvStationName);
             tvAddress = itemView.findViewById(R.id.tvStationAddress);
