@@ -119,6 +119,12 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
             spinnerStations.setEnabled(false);
         }
 
+        // Set the form title based on mode
+        TextView tvFormTitle = findViewById(R.id.tvFormTitle);
+        if (tvFormTitle != null) {
+            tvFormTitle.setText(isUpdateMode ? "Update Booking" : "Create New Booking");
+        }
+
         // set today's date if not update
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());

@@ -52,8 +52,8 @@ public class StationAdapter extends RecyclerView.Adapter<StationAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         StationItem s = stations.get(position);
         holder.tvName.setText(s.name);
-        holder.tvAddress.setText(s.address);
-        holder.tvPhone.setText(s.phone);
+        holder.tvAddress.setText("Address: " + s.address);
+        holder.tvPhone.setText("Contact Number: " + s.phone);
         holder.btnAddBooking.setOnClickListener(v -> listener.onAddBooking(s));
     }
 
