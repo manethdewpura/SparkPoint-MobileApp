@@ -350,13 +350,34 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Filter by status")
-                .setSingleChoiceItems(statuses, checkedIndex, (dialog, which) -> {
-                    selectedStatusFilter = statuses[which];
-                })
-                .setPositiveButton("Apply", (dialog, which) -> applyStatusFilter())
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_status_filter, null);
+        builder.setView(dialogView);
+
+        android.widget.ListView listView = dialogView.findViewById(R.id.listStatuses);
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_single_choice,
+                statuses
+        );
+        listView.setAdapter(adapter);
+        listView.setChoiceMode(android.widget.ListView.CHOICE_MODE_SINGLE);
+        listView.setItemChecked(checkedIndex, true);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            selectedStatusFilter = statuses[position];
+        });
+
+        Button btnCancel = dialogView.findViewById(R.id.btnDialogCancel);
+        Button btnApply = dialogView.findViewById(R.id.btnDialogApply);
+
+        AlertDialog dialog = builder.create();
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnApply.setOnClickListener(v -> {
+            applyStatusFilter();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
     
     /**
