@@ -4,7 +4,6 @@
     android:id="@+id/topAppBar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:fitsSystemWindows="true"
     android:background="@color/orange"
     android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
     app:title="@string/app_name"

@@ -24,6 +24,9 @@ import androidx.annotation.NonNull;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import com.ead.sparkpoint.utils.TokenManager;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 
 public class ProfileActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
@@ -100,9 +103,18 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             findViewById(R.id.btnDeactivate).setVisibility(android.view.View.GONE);
         }
 
-        btnEdit.setOnClickListener(v -> setEditable(true));
+        btnEdit.setOnClickListener(v -> {
+            setEditable(true);
+            btnEdit.setVisibility(android.view.View.GONE);
+            btnSave.setVisibility(android.view.View.VISIBLE);
+        });
 
-        btnSave.setOnClickListener(v -> updateProfile());
+        btnSave.setOnClickListener(v -> {
+            updateProfile();
+            btnEdit.setVisibility(android.view.View.VISIBLE);
+            btnSave.setVisibility(android.view.View.GONE);
+        });
+
     }
 
     private void setEditable(boolean enabled) {
@@ -171,17 +183,27 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
     }
 
     private void showDeactivateDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Build a Material-styled dialog matching app colors
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
         builder.setTitle("Deactivate Account");
-        builder.setMessage("Are you sure you want to deactivate this account? Please enter your NIC to confirm.");
+        builder.setMessage("Are you sure you want to deactivate this account?\nPlease enter your NIC to confirm.");
 
-        final EditText input = new EditText(this);
-        input.setHint("Enter NIC");
-        builder.setView(input);
+        // Build an input layout for NIC
+        TextInputLayout textInputLayout = new TextInputLayout(this);
+        textInputLayout.setHint("NIC");
+
+        final TextInputEditText nicInput = new TextInputEditText(this);
+        nicInput.setHint("Enter NIC");
+        textInputLayout.addView(nicInput);
+
+        int paddingPx = (int) (16 * getResources().getDisplayMetrics().density);
+        textInputLayout.setPadding(paddingPx, paddingPx, paddingPx, 0);
+
+        builder.setView(textInputLayout);
 
         builder.setPositiveButton("Confirm", (dialog, which) -> {
-            String enteredNic = input.getText().toString().trim();
-            if (enteredNic.equals(appUser.getNic())) {
+            String enteredNic = nicInput.getText() != null ? nicInput.getText().toString().trim() : "";
+            if (appUser != null && enteredNic.equals(appUser.getNic())) {
                 deactivateAccount();
             } else {
                 Toast.makeText(this, "NIC does not match!", Toast.LENGTH_SHORT).show();
@@ -189,9 +211,9 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         });
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-
         builder.show();
     }
+
 
     private void deactivateAccount() {
         new Thread(() -> {
