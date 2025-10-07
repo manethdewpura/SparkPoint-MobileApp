@@ -84,9 +84,9 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             etPhone.setText(appUser.getPhone());
         }
 
-        // If operator: enforce read-only (no edit/save/deactivate)
+        // Default: fields are read-only until user taps Edit
         boolean isOperator = roleUser != null && Integer.valueOf(2).equals(roleUser.getRoleId());
-        setEditable(!isOperator);
+        setEditable(false);
         if (isOperator) {
             // disable inputs explicitly for safety
             etUsername.setEnabled(false);
@@ -101,6 +101,12 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             btnEdit.setVisibility(android.view.View.GONE);
             btnSave.setVisibility(android.view.View.GONE);
             findViewById(R.id.btnDeactivate).setVisibility(android.view.View.GONE);
+
+            // Hide NIC and Phone fields for station operator
+            android.view.View tlNic = findViewById(R.id.tlNic);
+            android.view.View tlPhone = findViewById(R.id.tlPhone);
+            if (tlNic != null) tlNic.setVisibility(android.view.View.GONE);
+            if (tlPhone != null) tlPhone.setVisibility(android.view.View.GONE);
         }
 
         btnEdit.setOnClickListener(v -> {
