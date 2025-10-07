@@ -11,4 +11,8 @@
     <color name="light_blue">#0191fe</color>
     <color name="orange">#ff7600</color>
     <color name="red">#D50000</color>
+    <color name="success_green">#2E7D32</color>
+    <color name="error_red">#C62828</color>
+    <color name="gradient_start">#0B1E5D</color>
+    <color name="gradient_end">#051238</color>
 </resources>

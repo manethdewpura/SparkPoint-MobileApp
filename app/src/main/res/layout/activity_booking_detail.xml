@@ -1,81 +1,213 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#051238"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:background="@drawable/bg_gradient_blue">
 
-    <LinearLayout
+    <!-- Top App Bar -->
+    <include
+        android:id="@+id/topAppBarContainer"
+        layout="@layout/top_app_bar" />
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/tvHeading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Booking Details"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="20dp"
+                android:layout_gravity="center_horizontal"/>
+
+            <!-- Booking Details Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="6dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Summary"
+                        android:textColor="@color/orange"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#1F000000"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Label + Value in two columns -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:divider="?android:attr/dividerVertical"
+                        android:showDividers="middle">
+
+                        <!-- Booking ID -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="4dp">
+                            <TextView
+                                android:layout_width="120dp"
+                                android:layout_height="wrap_content"
+                                android:text="Booking ID:"
+                                android:textColor="#555"
+                                android:textStyle="bold"/>
+                            <TextView
+                                android:id="@+id/tvBookingId"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#111111"/>
+                        </LinearLayout>
+
+                        <!-- Owner NIC -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="4dp">
+                            <TextView
+                                android:layout_width="120dp"
+                                android:layout_height="wrap_content"
+                                android:text="Owner NIC:"
+                                android:textColor="#555"
+                                android:textStyle="bold"/>
+                            <TextView
+                                android:id="@+id/tvOwnerNIC"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#111111"/>
+                        </LinearLayout>
+
+                        <!-- Station Name -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="4dp">
+                            <TextView
+                                android:layout_width="120dp"
+                                android:layout_height="wrap_content"
+                                android:text="Station:"
+                                android:textColor="#555"
+                                android:textStyle="bold"/>
+                            <TextView
+                                android:id="@+id/tvStationName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#111111"/>
+                        </LinearLayout>
+
+                        <!-- Time Slot -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="4dp">
+                            <TextView
+                                android:layout_width="120dp"
+                                android:layout_height="wrap_content"
+                                android:text="Time Slot:"
+                                android:textColor="#555"
+                                android:textStyle="bold"/>
+                            <TextView
+                                android:id="@+id/tvTimeSlot"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="#111111"/>
+                        </LinearLayout>
+
+                        <!-- Status -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="6dp">
+                            <TextView
+                                android:layout_width="120dp"
+                                android:layout_height="wrap_content"
+                                android:text="Status:"
+                                android:textColor="#555"
+                                android:textStyle="bold"/>
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipStatus"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Pending"
+                                app:chipBackgroundColor="@color/light_blue"
+                                android:textColor="@android:color/white"
+                                app:chipCornerRadius="8dp"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Buttons (not full width, visually balanced) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStart"
+                android:layout_width="260dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="12dp"
+                android:text="Start Session"
+                android:textColor="@color/white"
+                app:cornerRadius="10dp"
+                app:backgroundTint="@color/light_blue" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnComplete"
+                android:layout_width="260dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Mark Completed"
+                android:textColor="@color/white"
+                app:cornerRadius="10dp"
+                app:backgroundTint="@color/orange"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:background="@color/white"
+        app:itemIconTint="@color/bottom_nav_item_color"
+        app:itemTextColor="@color/bottom_nav_item_color"
+        app:menu="@menu/bottom_navigation_operator_menu" />
 
-        <TextView
-            android:id="@+id/tvHeading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Booking Details"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#0191fe"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:id="@+id/tvBookingId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Booking ID: "
-            android:textColor="#FFFFFF"
-            android:padding="4dp"/>
-
-        <TextView
-            android:id="@+id/tvOwnerNIC"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Owner NIC: "
-            android:textColor="#FFFFFF"
-            android:padding="4dp"/>
-
-        <TextView
-            android:id="@+id/tvStationName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Station: "
-            android:textColor="#FFFFFF"
-            android:padding="4dp"/>
-
-        <TextView
-            android:id="@+id/tvTimeSlot"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Time Slot: "
-            android:textColor="#FFFFFF"
-            android:padding="4dp"/>
-
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Status: "
-            android:textColor="#ff7600"
-            android:textStyle="bold"
-            android:padding="4dp"
-            android:layout_marginBottom="16dp"/>
-
-        <Button
-            android:id="@+id/btnStart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Start Session (In Progress)"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#0191fe"
-            android:layout_marginBottom="12dp" />
-
-        <Button
-            android:id="@+id/btnComplete"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Mark Completed"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#ff7600"/>
-    </LinearLayout>
-</ScrollView>
+</LinearLayout>

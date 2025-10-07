@@ -146,7 +146,6 @@
                         android:hint="Password"
                         style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                         app:boxBackgroundMode="filled"
-                        app:endIconMode="password_toggle"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
