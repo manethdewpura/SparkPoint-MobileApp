@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.LoadingDialog;
 
 import org.json.JSONObject;
 
@@ -44,7 +45,8 @@ public class RegisterActivity extends AppCompatActivity {
         String password = etPassword.getText().toString();
         String nic = etNic.getText().toString();
         String phone = etPhone.getText().toString();
-
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Creating account..."));
         new Thread(() -> {
             try {
                 JSONObject req = new JSONObject();
@@ -59,6 +61,7 @@ public class RegisterActivity extends AppCompatActivity {
                 String response = ApiClient.postRequest(RegisterActivity.this, Constants.REGISTER_EV_OWNER_URL, req.toString());
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(RegisterActivity.this, "Registered Successfully", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                     finish();
@@ -66,9 +69,10 @@ public class RegisterActivity extends AppCompatActivity {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(RegisterActivity.this, "Registration failed", Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(RegisterActivity.this, "Registration failed", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }

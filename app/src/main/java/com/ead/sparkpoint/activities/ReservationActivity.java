@@ -27,6 +27,7 @@ import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
 import com.ead.sparkpoint.utils.TokenManager;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -212,6 +213,8 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
     private void fetchBookingDetails(String bookingId) {
         // Retrieve existing booking details and prefill form in update mode
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading booking..."));
         new Thread(() -> {
             try {
                 String url = Constants.UPDATE_BOOKINGS_URL.replace("{bookingid}", bookingId);
@@ -224,6 +227,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 int slots = obj.getInt("slotsRequested");
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     etNumSlots.setText(String.valueOf(slots));
                     etDate.setText(selectedDate);
 
@@ -236,15 +240,18 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Failed to fetch booking details", Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(this, "Failed to fetch booking details", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }
 
     private void loadStations(double latitude, double longitude) {
         // Fetch nearby stations based on device location and bind to spinner
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading stations..."));
         new Thread(() -> {
             try {
                 // Fetch stations
@@ -266,6 +273,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 }
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, stationNames);
                     adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
                     spinnerStations.setAdapter(adapter);
@@ -291,6 +299,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 });
             } catch (Exception e) {
                 e.printStackTrace();
+                runOnUiThread(loading::hide);
             }
         }).start();
     }
@@ -309,6 +318,8 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
     private void loadSlots(String stationId, String date) {
         // Fetch time slot availability for selected station and date and bind to spinner
         spinnerSlots.setEnabled(false);
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading availability..."));
         new Thread(() -> {
             try {
                 String endpoint = "/bookings/availability/" + stationId + "/date/" + date;
@@ -336,6 +347,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 }
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item, slotsList);
                     adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
                     spinnerSlots.setAdapter(adapter);
@@ -368,6 +380,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 });
             } catch (Exception e) {
                 e.printStackTrace();
+                runOnUiThread(loading::hide);
             }
         }).start();
     }
@@ -428,6 +441,8 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
     private void submitBooking(String slot, int Noslots) {
         // Submit a new booking to the server and navigate back on success
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Submitting booking..."));
         new Thread(() -> {
             try {
                 JSONObject body = new JSONObject();
@@ -438,6 +453,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 ApiClient.postRequest(ReservationActivity.this, Constants.CREATE_BOOKINGS_URL, body.toString());
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(this, "Booking Successful!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     startActivity(new Intent(this, ReservationListActivity.class));
@@ -445,13 +461,18 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this, "Booking Failed", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(this, "Booking Failed", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }
 
     private void updateBooking(String slot, int Noslots) {
         // Update an existing booking with new details on the server
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Updating booking..."));
         new Thread(() -> {
             try {
                 JSONObject body = new JSONObject();
@@ -463,6 +484,7 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 ApiClient.patchRequest(ReservationActivity.this, url, body.toString());
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(this, "Booking Updated Successfully!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     startActivity(new Intent(this, ReservationListActivity.class));
@@ -470,7 +492,10 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this, "Update Failed", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(this, "Update Failed", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }
@@ -529,6 +554,8 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
 
     private void logoutUser() {
         // Perform logout in background and finish the activity when done
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Signing out..."));
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);
@@ -536,9 +563,12 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    loading.hide();
                     finish();
                 });
+                return;
             }
+            runOnUiThread(loading::hide);
         }).start();
     }
 

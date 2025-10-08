@@ -21,6 +21,7 @@ import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.models.Reservation;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import android.view.MenuItem;
@@ -236,6 +237,8 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
     private void loadReservations(String url) {
         // Fetch reservations from API, map to model list, and display
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading reservations..."));
         new Thread(() -> {
             try {
                 String response = ApiClient.getRequest(ReservationListActivity.this, url);
@@ -260,19 +263,25 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
                     allReservations.add(r);
                 }
 
-                runOnUiThread(this::applyStatusFilter);
+                runOnUiThread(() -> {
+                    loading.hide();
+                    this.applyStatusFilter();
+                });
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Error loading reservations", Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(this, "Error loading reservations", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }
 
     private void cancelReservation(String bookingId) {
         // Send cancellation request to API and refresh list on success
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Cancelling reservation..."));
         new Thread(() -> {
             try {
                 JSONObject body = new JSONObject();
@@ -282,12 +291,16 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
                 String response = ApiClient.patchRequest(ReservationListActivity.this, url, body.toString());
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(this, "Reservation Cancelled!", Toast.LENGTH_SHORT).show();
                     loadReservations(Constants.GET_BOOKINGS_URL); // refresh list
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this, "Failed to cancel reservation", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(this, "Failed to cancel reservation", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }

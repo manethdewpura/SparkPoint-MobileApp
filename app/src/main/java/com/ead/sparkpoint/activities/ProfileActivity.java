@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import com.ead.sparkpoint.utils.TokenManager;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -145,7 +146,8 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         String password = etPassword.getText().toString();
         String nic = etNic.getText().toString();
         String phone = etPhone.getText().toString();
-
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Saving changes..."));
         new Thread(() -> {
             try {
                 JSONObject req = new JSONObject();
@@ -164,6 +166,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 );
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(ProfileActivity.this, response, Toast.LENGTH_SHORT).show();
 
                     // update local DB
@@ -181,10 +184,10 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(ProfileActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(ProfileActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
     }
@@ -225,6 +228,8 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
 
     private void deactivateAccount() {
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Deactivating account..."));
         new Thread(() -> {
             try {
                 String response = ApiClient.patchRequest(
@@ -234,6 +239,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 );
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(ProfileActivity.this, response, Toast.LENGTH_LONG).show();
 
                     // Clear local DB
@@ -247,9 +253,10 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(ProfileActivity.this, "Deactivation failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(ProfileActivity.this, "Deactivation failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
     }

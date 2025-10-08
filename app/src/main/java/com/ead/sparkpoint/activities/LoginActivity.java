@@ -14,6 +14,7 @@ import com.ead.sparkpoint.database.AppUserDAO;
 import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.LoadingDialog;
 
 import org.json.JSONObject;
 
@@ -47,7 +48,8 @@ public class LoginActivity extends AppCompatActivity {
     private void loginUser() {
         String username = etUsername.getText().toString();
         String password = etPassword.getText().toString();
-
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Signing in..."));
         new Thread(() -> {
             try {
                 JSONObject req = new JSONObject();
@@ -89,6 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                 appUserDAO.insertOrUpdateUser(appUser);
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
 
                     Integer roleId = appUser.getRoleId(); // Get the role ID
@@ -112,9 +115,10 @@ public class LoginActivity extends AppCompatActivity {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(LoginActivity.this, "Login failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(LoginActivity.this, "Login failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
 
         }).start();
