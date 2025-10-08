@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.database.AppUserDAO;
 import com.ead.sparkpoint.models.AppUser;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.ead.sparkpoint.utils.TokenManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -105,6 +106,8 @@ public class OperatorHomeActivity extends AppCompatActivity implements Navigatio
      * Logout user from the app
      */
     private void logoutUser() {
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Signing out..."));
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);
@@ -112,9 +115,12 @@ public class OperatorHomeActivity extends AppCompatActivity implements Navigatio
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    loading.hide();
                     finish();
                 });
+                return;
             }
+            runOnUiThread(loading::hide);
         }).start();
     }
 }

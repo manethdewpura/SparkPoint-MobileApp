@@ -19,6 +19,7 @@ import com.ead.sparkpoint.database.AppUserDAO;
 import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.LoadingDialog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,12 +65,15 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
     }
 
     private void loadBookingDetails() {
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading booking..."));
         new Thread(() -> {
             try {
                 String response = ApiClient.getRequest(BookingDetailActivity.this, Constants.GET_BOOKING_BY_ID_URL + bookingId);
                 bookingJson = new JSONObject(response);
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     try {
                         // Populate fields
                         tvBookingId.setText(bookingJson.optString("id"));
@@ -105,14 +109,17 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Error loading booking: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                runOnUiThread(() -> {
+                        loading.hide();
+                        Toast.makeText(this, "Error loading booking: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
     }
 
     private void updateBookingStatus(String newStatus) {
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Updating booking..."));
         new Thread(() -> {
             try {
                 JSONObject req = new JSONObject();
@@ -124,15 +131,17 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
                 String response = ApiClient.patchRequest(BookingDetailActivity.this, Constants.UPDATE_BOOKING_STATUS_URL + bookingId, req.toString());
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(this, response, Toast.LENGTH_SHORT).show();
                     loadBookingDetails(); // refresh
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                runOnUiThread(() -> {
+                        loading.hide();
+                        Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
     }

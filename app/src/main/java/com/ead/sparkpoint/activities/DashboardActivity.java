@@ -18,6 +18,7 @@ import com.ead.sparkpoint.database.AppUserDAO;
 import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -177,6 +178,8 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
 
     private void fetchNearbyStations(String urlString) {
         // Fetch nearby stations and render markers on the map
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading nearby stations..."));
         executor.execute(() -> {
             try {
                 String response = ApiClient.getRequest(DashboardActivity.this, urlString);
@@ -184,6 +187,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
 
                 handler.post(() -> {
                     try {
+                        loading.hide();
                         if (stationsArray.length() == 0) {
                             Toast.makeText(this, "No nearby stations found.", Toast.LENGTH_SHORT).show();
                             return;
@@ -222,6 +226,7 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
                 });
             } catch (Exception e) {
                 e.printStackTrace();
+                handler.post(loading::hide);
             }
         });
     }
@@ -292,6 +297,8 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
 
     private void logoutUser() {
         // Perform logout in background and finish the activity on completion
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Signing out..."));
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);
@@ -299,9 +306,12 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    loading.hide();
                     finish();
                 });
+                return;
             }
+            runOnUiThread(loading::hide);
         }).start();
     }
 }

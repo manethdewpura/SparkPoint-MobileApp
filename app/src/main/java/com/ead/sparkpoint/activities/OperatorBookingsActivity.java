@@ -22,6 +22,7 @@ import com.ead.sparkpoint.database.AppUserDAO;
 import com.ead.sparkpoint.models.AppUser;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.ead.sparkpoint.utils.TokenManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -105,9 +106,12 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
     }
 
     private void fetchBookings(String date) {
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.GONE);
         tvEmpty.setVisibility(View.GONE);
+
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading bookings..."));
 
         new Thread(() -> {
             try {
@@ -115,7 +119,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
 
                 if (response == null || response.isEmpty()) {
                     runOnUiThread(() -> {
-                        progressBar.setVisibility(View.GONE);
+                        loading.hide();
                         tvEmpty.setText("No data returned");
                         tvEmpty.setVisibility(View.VISIBLE);
                     });
@@ -128,7 +132,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
                 } catch (Exception parseEx) {
                     // Not an array; show error content briefly
                     runOnUiThread(() -> {
-                        progressBar.setVisibility(View.GONE);
+                        loading.hide();
                         tvEmpty.setText("Unexpected response");
                         tvEmpty.setVisibility(View.VISIBLE);
                     });
@@ -146,7 +150,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
                 }
 
                 runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    loading.hide();
                     if (filtered.isEmpty()) {
                         tvEmpty.setVisibility(View.VISIBLE);
                     } else {
@@ -160,7 +164,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    loading.hide();
                     Toast.makeText(this, "Failed to load bookings", Toast.LENGTH_LONG).show();
                 });
             }
