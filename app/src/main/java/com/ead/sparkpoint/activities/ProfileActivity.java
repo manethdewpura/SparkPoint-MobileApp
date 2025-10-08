@@ -1,6 +1,7 @@
 package com.ead.sparkpoint.activities;
 
 import android.os.Bundle;
+import android.text.Html;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.Button;
@@ -119,8 +120,6 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
         btnSave.setOnClickListener(v -> {
             updateProfile();
-            btnEdit.setVisibility(android.view.View.VISIBLE);
-            btnSave.setVisibility(android.view.View.GONE);
         });
 
     }
@@ -140,12 +139,33 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
     private void updateProfile() {
         String username = etUsername.getText().toString();
-        String email = etEmail.getText().toString();
+        String email = etEmail.getText().toString().trim();
         String firstName = etFirstName.getText().toString();
         String lastName = etLastName.getText().toString();
         String password = etPassword.getText().toString();
         String nic = etNic.getText().toString();
-        String phone = etPhone.getText().toString();
+        String phone = etPhone.getText().toString().trim();
+
+        // --- Client-Side Validation ---
+        boolean isValid = true;
+        etEmail.setError(null); // Clear previous errors
+        etPhone.setError(null);
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError(Html.fromHtml("<font color='#ff7600'>Invalid email format</font>"));
+            isValid = false;
+        }
+
+        if (phone.length() > 10) {
+            etPhone.setError(Html.fromHtml("<font color='#ff7600'>Phone number cannot exceed 10 digits</font>"));
+            isValid = false;
+        }
+
+        if (!isValid) {
+            return; // Stop if validation fails
+        }
+        // --- End of Validation ---
+
         LoadingDialog loading = new LoadingDialog(this);
         runOnUiThread(() -> loading.show("Saving changes..."));
         new Thread(() -> {
@@ -180,6 +200,8 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
                     appUserDAO.insertOrUpdateUser(appUser);
                     setEditable(false);
+                    btnEdit.setVisibility(android.view.View.VISIBLE);
+                    btnSave.setVisibility(android.view.View.GONE);
                 });
 
             } catch (Exception e) {
@@ -308,7 +330,8 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 popup.setOnMenuItemClickListener(item -> {
                     int itemId = item.getItemId();
                     if (itemId == R.id.menu_logout) {
-                        logoutUser();
+                        // Handle logout
+                        new TokenManager(this).logoutUser();
                         return true;
                     }
                     return false;
@@ -318,23 +341,4 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             });
         }
     }
-
-    /**
-     * Logout user from the app
-     */
-    private void logoutUser() {
-        new Thread(() -> {
-            try {
-                TokenManager tokenManager = new TokenManager(this);
-                tokenManager.logoutUser();
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    finish();
-                });
-            }
-        }).start();
-    }
-
-
 }
