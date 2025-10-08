@@ -1,6 +1,7 @@
 package com.ead.sparkpoint.activities;
 
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -189,19 +190,20 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
     }
 
     private void showDeactivateDialog() {
-        // Build a Material-styled dialog matching app colors
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
         builder.setTitle("Deactivate Account");
         builder.setMessage("Are you sure you want to deactivate this account?\nPlease enter your NIC to confirm.");
 
-        // Build an input layout for NIC
+        // Create TextInputLayout
         TextInputLayout textInputLayout = new TextInputLayout(this);
-        textInputLayout.setHint("NIC");
+        textInputLayout.setHint("Enter NIC"); // set the hint on the layout
 
-        final TextInputEditText nicInput = new TextInputEditText(this);
-        nicInput.setHint("Enter NIC");
+        // Create TextInputEditText correctly inside the layout
+        TextInputEditText nicInput = new TextInputEditText(textInputLayout.getContext());
+        nicInput.setInputType(InputType.TYPE_CLASS_TEXT); // optional
         textInputLayout.addView(nicInput);
 
+        // Apply padding
         int paddingPx = (int) (16 * getResources().getDisplayMetrics().density);
         textInputLayout.setPadding(paddingPx, paddingPx, paddingPx, 0);
 
@@ -219,6 +221,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
+
 
 
     private void deactivateAccount() {
