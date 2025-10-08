@@ -1,7 +1,6 @@
 package com.ead.sparkpoint.utils;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -66,11 +65,10 @@ public class ApiClient {
         try {
             response = sendRequest(endpoint, "GET", null, token);
         } catch (Exception e) {
-            Log.e("ApiClient", "Error in GET request", e);
             throw e;
         }
 
-        if (response.contains("Unauthorized") ||
+        if (response.contains("Authentication required") ||
                 response.contains("expired") ||
                 response.contains("invalid")) {
             token = tokenManager.refreshAccessToken();
@@ -92,11 +90,10 @@ public class ApiClient {
         try {
             response = sendRequest(endpoint, "POST", jsonInput, token);
         } catch (Exception e) {
-            Log.e("ApiClient", "Error in POST request", e);
             throw e;
         }
 
-        if (response != null && response.contains("Unauthorized")) {
+        if (response != null && response.contains("Authentication required")) {
             token = tokenManager.refreshAccessToken();
             if (token != null) {
                 response = sendRequest(endpoint, "POST", jsonInput, token);
@@ -115,11 +112,10 @@ public class ApiClient {
         try {
             response = sendRequest(endpoint, "PUT", jsonInput, token);
         } catch (Exception e) {
-            Log.e("ApiClient", "Error in PUT request", e);
             throw e;
         }
 
-        if (response.contains("Unauthorized")) {
+        if (response.contains("Authentication required")) {
             token = tokenManager.refreshAccessToken();
             if (token != null) {
                 response = sendRequest(endpoint, "PUT", jsonInput, token);
@@ -134,22 +130,17 @@ public class ApiClient {
     public static String patchRequest(Context context, String endpoint, String jsonInput) throws Exception {
         TokenManager tokenManager = new TokenManager(context);
         String token = tokenManager.getAccessToken();
-        Log.d("ApiClient", "Token: " + token);
         String response;
         try {
             response = sendRequest(endpoint, "PATCH", jsonInput, token);
         } catch (Exception e) {
-            Log.e("ApiClient", "Error in PATCH request", e);
             throw e;
         }
-        Log.d("ApiClient", "Response: " + response);
 
         if (response.contains("Authentication required")) {
-            Log.d("ApiClient", "Unauthorized");
             token = tokenManager.refreshAccessToken();
             if (token != null) {
                 response = sendRequest(endpoint, "PATCH", jsonInput, token);
-                Log.d("ApiClient", "Refreshed token: " + token);
             } else {
                 return null;
             }
@@ -165,11 +156,10 @@ public class ApiClient {
         try {
             response = sendRequest(endpoint, "DELETE", null, token);
         } catch (Exception e) {
-            Log.e("ApiClient", "Error in DELETE request", e);
             throw e;
         }
 
-        if (response.contains("Unauthorized")) {
+        if (response.contains("Authentication required")) {
             token = tokenManager.refreshAccessToken();
             if (token != null) {
                 response = sendRequest(endpoint, "DELETE", null, token);
