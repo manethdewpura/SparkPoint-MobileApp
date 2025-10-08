@@ -56,8 +56,9 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Set up dashboard screen, redirect operators, initialize UI and data
         super.onCreate(savedInstanceState);
-        // Guard: redirect station operators away from EV owner dashboard
+        //redirect station operators away from EV owner dashboard
         AppUserDAO dao = new AppUserDAO(this);
         AppUser u = dao.getUser();
         if (u != null && Integer.valueOf(2).equals(u.getRoleId())) {
@@ -111,11 +112,13 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        // Receive map instance and kick off location request
         mMap = googleMap;
         requestUserLocation();
     }
 
     private void requestUserLocation() {
+        // Request user location permission and center map on user when available
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -141,11 +144,11 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         });
     }
 
-    // Handle user permission result
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
+        // Handle result of location permission request and proceed accordingly
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_REQUEST_CODE &&
                 grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -155,8 +158,8 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         }
     }
 
-    // Fetch reservation counts (Pending / Confirmed)
     private void fetchReservationCount(String urlString, TextView textView) {
+        // Fetch reservation count from API in background and update provided TextView
         executor.execute(() -> {
             int count = 0;
             try {
@@ -172,8 +175,8 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         });
     }
 
-    // Fetch nearby stations and show on map
     private void fetchNearbyStations(String urlString) {
+        // Fetch nearby stations and render markers on the map
         executor.execute(() -> {
             try {
                 String response = ApiClient.getRequest(DashboardActivity.this, urlString);
@@ -196,7 +199,6 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
                         for (int i = 0; i < stationsArray.length(); i++) {
                             JSONObject station = stationsArray.getJSONObject(i);
 
-                            // ✅ use "location" instead of "nearLocation"
                             JSONObject location = station.getJSONObject("location");
                             double lat = location.getDouble("latitude");
                             double lon = location.getDouble("longitude");
@@ -226,10 +228,11 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle bottom navigation item taps and navigate between screens
         int itemId = item.getItemId();
         
         if (itemId == R.id.nav_home) {
-            // Already on home; consume the event to keep highlight
+            // Already on home screen
             return true;
         } else if (itemId == R.id.nav_bookings) {
             Intent bookingsIntent = new Intent(this, ReservationListActivity.class);
@@ -243,11 +246,9 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         
         return false;
     }
-    
-    /**
-     * Setup the menu button in the top app bar
-     */
+
     private void setupMenuButton() {
+        // Wire up the top app bar menu and handle menu actions
         ImageButton menuButton = findViewById(R.id.menuButton);
         if (menuButton != null) {
             menuButton.setOnClickListener(v -> {
@@ -267,11 +268,9 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
             });
         }
     }
-    
-    /**
-     * Load and display user information
-     */
+
     private void loadUserInfo() {
+        // Load user details from local DB and populate header fields
         AppUserDAO dao = new AppUserDAO(this);
         AppUser user = dao.getUser();
 
@@ -282,10 +281,8 @@ public class DashboardActivity extends AppCompatActivity implements OnMapReadyCa
         }
     }
 
-    /**
-     * Logout user from the app
-     */
     private void logoutUser() {
+        // Perform logout in background and finish the activity on completion
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);
