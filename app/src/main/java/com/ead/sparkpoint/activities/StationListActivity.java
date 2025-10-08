@@ -35,6 +35,7 @@ public class StationListActivity extends AppCompatActivity implements StationAda
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // Initialize station list screen, wire navigation/menu, and load stations
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_station_list);
 
@@ -55,6 +56,7 @@ public class StationListActivity extends AppCompatActivity implements StationAda
     }
 
     private void loadStations() {
+        // Fetch stations from API and update the RecyclerView
         new Thread(() -> {
             try {
                 String response = ApiClient.getRequest(StationListActivity.this, Constants.GET_NEARBY_STATIONS_URL);
@@ -78,6 +80,7 @@ public class StationListActivity extends AppCompatActivity implements StationAda
 
     @Override
     public void onAddBooking(StationAdapter.StationItem station) {
+        // Launch reservation screen with this station preselected and locked
         Intent intent = new Intent(this, ReservationActivity.class);
         intent.putExtra("lockStation", true);
         intent.putExtra("stationId", station.id);
@@ -87,6 +90,7 @@ public class StationListActivity extends AppCompatActivity implements StationAda
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle bottom navigation taps and navigate between screens
         int itemId = item.getItemId();
         
         if (itemId == R.id.nav_home) {
@@ -94,7 +98,7 @@ public class StationListActivity extends AppCompatActivity implements StationAda
             startActivity(homeIntent);
             return true;
         } else if (itemId == R.id.nav_bookings) {
-            // Already on bookings; consume the event to keep highlight
+            // Already on bookings screen
             return true;
         } else if (itemId == R.id.nav_profile) {
             Intent profileIntent = new Intent(this, ProfileActivity.class);
@@ -105,10 +109,8 @@ public class StationListActivity extends AppCompatActivity implements StationAda
         return false;
     }
     
-    /**
-     * Setup the menu button in the top app bar
-     */
     private void setupMenuButton() {
+        // Wire up the top app bar menu and handle logout action
         ImageButton menuButton = findViewById(R.id.menuButton);
         if (menuButton != null) {
             menuButton.setOnClickListener(v -> {
@@ -138,10 +140,8 @@ public class StationListActivity extends AppCompatActivity implements StationAda
         }
     }
     
-    /**
-     * Logout user from the app
-     */
     private void logoutUser() {
+        // Perform logout in background and finish the activity when done
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);

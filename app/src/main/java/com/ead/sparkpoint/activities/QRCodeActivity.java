@@ -29,6 +29,7 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Initialize QR screen, wire navigation/menu, and render QR for booking
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qrcode);
 
@@ -50,6 +51,7 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
     }
 
     private void generateQRCode(String data) {
+        // Generate a bitmap QR code from provided data and display it
         QRCodeWriter writer = new QRCodeWriter();
         try {
             int size = 512;
@@ -69,6 +71,7 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle bottom navigation item taps and navigate between screens
         int itemId = item.getItemId();
         
         if (itemId == R.id.nav_home) {
@@ -76,7 +79,7 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
             startActivity(homeIntent);
             return true;
         } else if (itemId == R.id.nav_bookings) {
-            // Already on bookings; consume the event to keep highlight
+            // Already on bookings screen
             return true;
         } else if (itemId == R.id.nav_profile) {
             Intent profileIntent = new Intent(this, ProfileActivity.class);
@@ -86,11 +89,9 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
         
         return false;
     }
-    
-    /**
-     * Setup the menu button in the top app bar
-     */
+
     private void setupMenuButton() {
+        // Wire up the top app bar menu and handle logout action
         ImageButton menuButton = findViewById(R.id.menuButton);
         if (menuButton != null) {
             menuButton.setOnClickListener(v -> {
@@ -119,11 +120,9 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
             });
         }
     }
-    
-    /**
-     * Logout user from the app
-     */
+
     private void logoutUser() {
+        // Perform logout in background and finish the activity when done
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);

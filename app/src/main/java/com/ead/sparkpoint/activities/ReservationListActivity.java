@@ -49,8 +49,9 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Initialize bookings list screen, wire filters/nav, and load reservations
         super.onCreate(savedInstanceState);
-        // Guard: redirect station operators away from EV owner bookings list
+        // redirect station operators away from EV owner bookings list
         AppUserDAO dao = new AppUserDAO(this);
         AppUser u = dao.getUser();
         if (u != null && Integer.valueOf(2).equals(u.getRoleId())) {
@@ -201,6 +202,7 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     }
 
     private void applyStatusFilter() {
+        // Apply selected status to full list and refresh adapter
         reservationList.clear();
         if ("All".equalsIgnoreCase(selectedStatusFilter)) {
             reservationList.addAll(allReservations);
@@ -218,11 +220,13 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     }
 
     private String getTodayDate() {
+        // Return today's date formatted as yyyy-MM-dd for API filters
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         return sdf.format(new Date());
     }
 
     private void setActiveButton(Button activeButton) {
+        // Update UI selected state for filter buttons
         btnCurrent.setSelected(false);
         btnUpcoming.setSelected(false);
         btnPast.setSelected(false);
@@ -231,6 +235,7 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     }
 
     private void loadReservations(String url) {
+        // Fetch reservations from API, map to model list, and display
         new Thread(() -> {
             try {
                 String response = ApiClient.getRequest(ReservationListActivity.this, url);
@@ -267,6 +272,7 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     }
 
     private void cancelReservation(String bookingId) {
+        // Send cancellation request to API and refresh list on success
         new Thread(() -> {
             try {
                 JSONObject body = new JSONObject();
@@ -288,10 +294,11 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle bottom navigation taps and navigate between screens
         int itemId = item.getItemId();
         
         if (itemId == R.id.nav_bookings) {
-            // Already on bookings; consume the event to keep highlight
+            // Already on bookings screen
             return true;
         } else if (itemId == R.id.nav_home) {
             Intent homeIntent = new Intent(this, DashboardActivity.class);
@@ -305,11 +312,9 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
         
         return false;
     }
-    
-    /**
-     * Setup the menu button in the top app bar
-     */
+
     private void setupMenuButton() {
+        // Wire up the top app bar menu and handle logout action
         ImageButton menuButton = findViewById(R.id.menuButton);
         if (menuButton != null) {
             menuButton.setOnClickListener(v -> {
@@ -340,6 +345,7 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     }
     
     private void setupStatusFilterButton() {
+        // Attach click listener to open the status filter dialog
         ImageButton btnFilter = findViewById(R.id.btnFilterStatus);
         if (btnFilter != null) {
             btnFilter.setOnClickListener(v -> showStatusFilterDialog());
@@ -347,6 +353,7 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
     }
 
     private void showStatusFilterDialog() {
+        // Show custom-styled filter dialog with single-choice statuses and actions
         final String[] statuses = new String[]{
                 "All", "Pending", "Confirmed", "In Progress", "Completed", "Cancelled", "No Show"
         };
@@ -359,19 +366,38 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Filter by status")
-                .setSingleChoiceItems(statuses, checkedIndex, (dialog, which) -> {
-                    selectedStatusFilter = statuses[which];
-                })
-                .setPositiveButton("Apply", (dialog, which) -> applyStatusFilter())
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                .show();
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_status_filter, null);
+        builder.setView(dialogView);
+
+        android.widget.ListView listView = dialogView.findViewById(R.id.listStatuses);
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_single_choice,
+                statuses
+        );
+        listView.setAdapter(adapter);
+        listView.setChoiceMode(android.widget.ListView.CHOICE_MODE_SINGLE);
+        listView.setItemChecked(checkedIndex, true);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            selectedStatusFilter = statuses[position];
+        });
+
+        Button btnCancel = dialogView.findViewById(R.id.btnDialogCancel);
+        Button btnApply = dialogView.findViewById(R.id.btnDialogApply);
+
+        AlertDialog dialog = builder.create();
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnApply.setOnClickListener(v -> {
+            applyStatusFilter();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
-    
-    /**
-     * Logout user from the app
-     */
+
     private void logoutUser() {
+        // Perform logout in background and finish the activity when done
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);
