@@ -1,10 +1,13 @@
 package com.ead.sparkpoint.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.app.DatePickerDialog;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.ProgressBar;
@@ -58,9 +61,13 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         adapter = new BookingsAdapter(bookings);
         recyclerView.setAdapter(adapter);
 
+        // Setup bottom navigation
         BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
         bottomNavigation.setSelectedItemId(R.id.nav_operator_bookings);
         bottomNavigation.setOnItemSelectedListener(this);
+
+        // Setup menu button
+        setupMenuButton();
 
 // Load today's bookings by default
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
@@ -212,15 +219,68 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.nav_operator_home) {
+            // Navigate back to home
+            startActivity(new Intent(this, OperatorHomeActivity.class));
             finish();
             return true;
         } else if (itemId == R.id.nav_operator_bookings) {
+            // Already on bookings; consume the event to keep highlight
             return true;
         } else if (itemId == R.id.nav_operator_profile) {
             startActivity(new android.content.Intent(this, ProfileActivity.class));
             return true;
         }
         return false;
+    }
+
+    /**
+     * Setup the menu button in the top app bar
+     */
+    private void setupMenuButton() {
+        ImageButton menuButton = findViewById(R.id.menuButton);
+        if (menuButton != null) {
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(this, menuButton);
+                popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
+
+                // Ensure icons are shown in the popup
+                try {
+                    java.lang.reflect.Field mFieldPopup = PopupMenu.class.getDeclaredField("mPopup");
+                    mFieldPopup.setAccessible(true);
+                    Object mPopup = mFieldPopup.get(popup);
+                    mPopup.getClass().getDeclaredMethod("setForceShowIcon", boolean.class)
+                            .invoke(mPopup, true);
+                } catch (Exception ignored) { }
+
+                popup.setOnMenuItemClickListener(item -> {
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.menu_logout) {
+                        logoutUser();
+                        return true;
+                    }
+                    return false;
+                });
+
+                popup.show();
+            });
+        }
+    }
+
+    /**
+     * Logout user from the app
+     */
+    private void logoutUser() {
+        new Thread(() -> {
+            try {
+                TokenManager tokenManager = new TokenManager(this);
+                tokenManager.logoutUser();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    finish();
+                });
+            }
+        }).start();
     }
 
     @Override

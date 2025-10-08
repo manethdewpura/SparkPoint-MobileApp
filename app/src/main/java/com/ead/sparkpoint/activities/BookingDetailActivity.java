@@ -2,11 +2,17 @@ package com.ead.sparkpoint.activities;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.chip.Chip;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.database.AppUserDAO;
@@ -17,9 +23,10 @@ import com.ead.sparkpoint.utils.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class BookingDetailActivity extends AppCompatActivity {
+public class BookingDetailActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
 
-    TextView tvBookingId, tvOwnerNIC, tvStationName, tvTimeSlot, tvStatus;
+    TextView tvBookingId, tvOwnerNIC, tvStationName, tvTimeSlot;
+    Chip chipStatus;
     Button btnStart, btnComplete;
     AppUser appUser;
     String bookingId;
@@ -35,7 +42,7 @@ public class BookingDetailActivity extends AppCompatActivity {
         tvOwnerNIC = findViewById(R.id.tvOwnerNIC);
         tvStationName = findViewById(R.id.tvStationName);
         tvTimeSlot = findViewById(R.id.tvTimeSlot);
-        tvStatus = findViewById(R.id.tvStatus);
+        chipStatus = findViewById(R.id.chipStatus);
         btnStart = findViewById(R.id.btnStart);
         btnComplete = findViewById(R.id.btnComplete);
 
@@ -47,6 +54,13 @@ public class BookingDetailActivity extends AppCompatActivity {
 
         btnStart.setOnClickListener(v -> updateBookingStatus("In Progress"));
         btnComplete.setOnClickListener(v -> updateBookingStatus("Completed"));
+
+        // Setup bottom navigation for Station Operator context
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_operator_bookings);
+            bottomNavigation.setOnItemSelectedListener(this);
+        }
     }
 
     private void loadBookingDetails() {
@@ -58,13 +72,15 @@ public class BookingDetailActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     try {
                         // Populate fields
-                        tvBookingId.setText("Booking ID: " + bookingJson.optString("id"));
-                        tvOwnerNIC.setText("Owner NIC: " + bookingJson.optString("ownerNIC"));
+                        tvBookingId.setText(bookingJson.optString("id"));
+                        tvOwnerNIC.setText(bookingJson.optString("ownerNIC"));
                         if (bookingJson.has("station")) {
-                            tvStationName.setText("Station: " + bookingJson.getJSONObject("station").optString("name"));
+                            tvStationName.setText(bookingJson.getJSONObject("station").optString("name"));
                         }
-                        tvTimeSlot.setText("Time Slot: " + bookingJson.optString("timeSlotDisplay"));
-                        tvStatus.setText("Status: " + bookingJson.optString("status"));
+                        tvTimeSlot.setText(bookingJson.optString("timeSlotDisplay"));
+                        String statusText = bookingJson.optString("status");
+                        chipStatus.setText(statusText);
+                        styleStatusChip(statusText);
 
                         // Handle button visibility based on status
                         String status = bookingJson.optString("status", "");
@@ -119,5 +135,39 @@ public class BookingDetailActivity extends AppCompatActivity {
                 );
             }
         }).start();
+    }
+
+    private void styleStatusChip(String status) {
+        int bgColor;
+        if ("Confirmed".equalsIgnoreCase(status)) {
+            bgColor = getResources().getColor(R.color.light_blue);
+        } else if ("In Progress".equalsIgnoreCase(status)) {
+            bgColor = getResources().getColor(R.color.orange);
+        } else if ("Completed".equalsIgnoreCase(status)) {
+            bgColor = getResources().getColor(R.color.success_green);
+        } else if ("Cancelled".equalsIgnoreCase(status)) {
+            bgColor = getResources().getColor(R.color.error_red);
+        } else {
+            bgColor = getResources().getColor(R.color.light_blue);
+        }
+        chipStatus.setChipBackgroundColorResource(android.R.color.transparent);
+        chipStatus.setTextColor(getResources().getColor(android.R.color.white));
+        chipStatus.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(bgColor));
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.nav_operator_home) {
+            startActivity(new android.content.Intent(this, OperatorHomeActivity.class));
+            return true;
+        } else if (itemId == R.id.nav_operator_bookings) {
+            // Stay on bookings-related screen
+            return true;
+        } else if (itemId == R.id.nav_operator_profile) {
+            startActivity(new android.content.Intent(this, ProfileActivity.class));
+            return true;
+        }
+        return false;
     }
 }

@@ -98,6 +98,15 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
                 PopupMenu popup = new PopupMenu(this, menuButton);
                 popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
                 
+                // Ensure icons are shown in the popup
+                try {
+                    java.lang.reflect.Field mFieldPopup = PopupMenu.class.getDeclaredField("mPopup");
+                    mFieldPopup.setAccessible(true);
+                    Object mPopup = mFieldPopup.get(popup);
+                    mPopup.getClass().getDeclaredMethod("setForceShowIcon", boolean.class)
+                            .invoke(mPopup, true);
+                } catch (Exception ignored) { }
+
                 popup.setOnMenuItemClickListener(item -> {
                     int itemId = item.getItemId();
                     if (itemId == R.id.menu_logout) {

@@ -18,6 +18,7 @@ import com.ead.sparkpoint.adapters.StationAdapter;
 import com.ead.sparkpoint.utils.ApiClient;
 import com.ead.sparkpoint.utils.Constants;
 import com.ead.sparkpoint.utils.TokenManager;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -57,6 +58,8 @@ public class StationListActivity extends AppCompatActivity implements StationAda
 
     private void loadStations() {
         // Fetch stations from API and update the RecyclerView
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Loading stations..."));
         new Thread(() -> {
             try {
                 String response = ApiClient.getRequest(StationListActivity.this, Constants.GET_NEARBY_STATIONS_URL);
@@ -70,10 +73,16 @@ public class StationListActivity extends AppCompatActivity implements StationAda
                     String phone = obj.optString("contactPhone", "");
                     stations.add(new StationAdapter.StationItem(id, name, address, phone));
                 }
-                runOnUiThread(() -> adapter.notifyDataSetChanged());
+                runOnUiThread(() -> {
+                    loading.hide();
+                    adapter.notifyDataSetChanged();
+                });
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this, "Failed to load stations", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(this, "Failed to load stations", Toast.LENGTH_SHORT).show();
+                });
             }
         }).start();
     }
@@ -117,6 +126,15 @@ public class StationListActivity extends AppCompatActivity implements StationAda
                 PopupMenu popup = new PopupMenu(this, menuButton);
                 popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
                 
+                // Ensure icons are shown in the popup
+                try {
+                    java.lang.reflect.Field mFieldPopup = PopupMenu.class.getDeclaredField("mPopup");
+                    mFieldPopup.setAccessible(true);
+                    Object mPopup = mFieldPopup.get(popup);
+                    mPopup.getClass().getDeclaredMethod("setForceShowIcon", boolean.class)
+                            .invoke(mPopup, true);
+                } catch (Exception ignored) { }
+
                 popup.setOnMenuItemClickListener(item -> {
                     int itemId = item.getItemId();
                     if (itemId == R.id.menu_logout) {
@@ -133,6 +151,8 @@ public class StationListActivity extends AppCompatActivity implements StationAda
     
     private void logoutUser() {
         // Perform logout in background and finish the activity when done
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Signing out..."));
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);
@@ -140,9 +160,12 @@ public class StationListActivity extends AppCompatActivity implements StationAda
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    loading.hide();
                     finish();
                 });
+                return;
             }
+            runOnUiThread(loading::hide);
         }).start();
     }
 }

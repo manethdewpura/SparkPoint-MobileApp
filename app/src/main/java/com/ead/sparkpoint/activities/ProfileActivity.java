@@ -1,6 +1,7 @@
 package com.ead.sparkpoint.activities;
 
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +25,10 @@ import androidx.annotation.NonNull;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import com.ead.sparkpoint.utils.TokenManager;
+import com.ead.sparkpoint.utils.LoadingDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 
 public class ProfileActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
@@ -81,9 +86,9 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             etPhone.setText(appUser.getPhone());
         }
 
-        // If operator: enforce read-only (no edit/save/deactivate)
+        // Default: fields are read-only until user taps Edit
         boolean isOperator = roleUser != null && Integer.valueOf(2).equals(roleUser.getRoleId());
-        setEditable(!isOperator);
+        setEditable(false);
         if (isOperator) {
             // disable inputs explicitly for safety
             etUsername.setEnabled(false);
@@ -98,11 +103,26 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             btnEdit.setVisibility(android.view.View.GONE);
             btnSave.setVisibility(android.view.View.GONE);
             findViewById(R.id.btnDeactivate).setVisibility(android.view.View.GONE);
+
+            // Hide NIC and Phone fields for station operator
+            android.view.View tlNic = findViewById(R.id.tlNic);
+            android.view.View tlPhone = findViewById(R.id.tlPhone);
+            if (tlNic != null) tlNic.setVisibility(android.view.View.GONE);
+            if (tlPhone != null) tlPhone.setVisibility(android.view.View.GONE);
         }
 
-        btnEdit.setOnClickListener(v -> setEditable(true));
+        btnEdit.setOnClickListener(v -> {
+            setEditable(true);
+            btnEdit.setVisibility(android.view.View.GONE);
+            btnSave.setVisibility(android.view.View.VISIBLE);
+        });
 
-        btnSave.setOnClickListener(v -> updateProfile());
+        btnSave.setOnClickListener(v -> {
+            updateProfile();
+            btnEdit.setVisibility(android.view.View.VISIBLE);
+            btnSave.setVisibility(android.view.View.GONE);
+        });
+
     }
 
     private void setEditable(boolean enabled) {
@@ -126,7 +146,8 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         String password = etPassword.getText().toString();
         String nic = etNic.getText().toString();
         String phone = etPhone.getText().toString();
-
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Saving changes..."));
         new Thread(() -> {
             try {
                 JSONObject req = new JSONObject();
@@ -145,6 +166,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 );
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(ProfileActivity.this, response, Toast.LENGTH_SHORT).show();
 
                     // update local DB
@@ -162,26 +184,37 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(ProfileActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(ProfileActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
     }
 
     private void showDeactivateDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
         builder.setTitle("Deactivate Account");
-        builder.setMessage("Are you sure you want to deactivate this account? Please enter your NIC to confirm.");
+        builder.setMessage("Are you sure you want to deactivate this account?\nPlease enter your NIC to confirm.");
 
-        final EditText input = new EditText(this);
-        input.setHint("Enter NIC");
-        builder.setView(input);
+        // Create TextInputLayout
+        TextInputLayout textInputLayout = new TextInputLayout(this);
+        textInputLayout.setHint("Enter NIC"); // set the hint on the layout
+
+        // Create TextInputEditText correctly inside the layout
+        TextInputEditText nicInput = new TextInputEditText(textInputLayout.getContext());
+        nicInput.setInputType(InputType.TYPE_CLASS_TEXT); // optional
+        textInputLayout.addView(nicInput);
+
+        // Apply padding
+        int paddingPx = (int) (16 * getResources().getDisplayMetrics().density);
+        textInputLayout.setPadding(paddingPx, paddingPx, paddingPx, 0);
+
+        builder.setView(textInputLayout);
 
         builder.setPositiveButton("Confirm", (dialog, which) -> {
-            String enteredNic = input.getText().toString().trim();
-            if (enteredNic.equals(appUser.getNic())) {
+            String enteredNic = nicInput.getText() != null ? nicInput.getText().toString().trim() : "";
+            if (appUser != null && enteredNic.equals(appUser.getNic())) {
                 deactivateAccount();
             } else {
                 Toast.makeText(this, "NIC does not match!", Toast.LENGTH_SHORT).show();
@@ -189,11 +222,14 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         });
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-
         builder.show();
     }
 
+
+
     private void deactivateAccount() {
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Deactivating account..."));
         new Thread(() -> {
             try {
                 String response = ApiClient.patchRequest(
@@ -203,6 +239,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 );
 
                 runOnUiThread(() -> {
+                    loading.hide();
                     Toast.makeText(ProfileActivity.this, response, Toast.LENGTH_LONG).show();
 
                     // Clear local DB
@@ -216,9 +253,10 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(ProfileActivity.this, "Deactivation failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                runOnUiThread(() -> {
+                    loading.hide();
+                    Toast.makeText(ProfileActivity.this, "Deactivation failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
     }
@@ -257,6 +295,15 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             menuButton.setOnClickListener(v -> {
                 PopupMenu popup = new PopupMenu(this, menuButton);
                 popup.getMenuInflater().inflate(R.menu.top_app_bar_menu, popup.getMenu());
+
+                // Ensure icons are shown in the popup
+                try {
+                    java.lang.reflect.Field mFieldPopup = PopupMenu.class.getDeclaredField("mPopup");
+                    mFieldPopup.setAccessible(true);
+                    Object mPopup = mFieldPopup.get(popup);
+                    mPopup.getClass().getDeclaredMethod("setForceShowIcon", boolean.class)
+                            .invoke(mPopup, true);
+                } catch (Exception ignored) { }
 
                 popup.setOnMenuItemClickListener(item -> {
                     int itemId = item.getItemId();
