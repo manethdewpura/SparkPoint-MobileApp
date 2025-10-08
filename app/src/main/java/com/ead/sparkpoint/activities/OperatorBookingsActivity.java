@@ -2,7 +2,6 @@ package com.ead.sparkpoint.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.app.DatePickerDialog;
 import android.view.View;
@@ -74,16 +73,6 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         tvFilterDate.setText("Bookings for " + today);
         btnPickDate.setOnClickListener(v -> openDatePicker(today));
-
-// ✅ Add these lines for debugging
-        AppUserDAO dao = new AppUserDAO(this);
-        AppUser currentUser = dao.getUser();
-        if (currentUser != null) {
-            Log.d("TokenCheck", "AccessToken=" + currentUser.getAccessToken());
-            Log.d("TokenCheck", "RoleId=" + currentUser.getRoleId());
-        } else {
-            Log.d("TokenCheck", "No user found in local DB");
-        }
 
 // Then fetch bookings
         fetchBookings(today);
