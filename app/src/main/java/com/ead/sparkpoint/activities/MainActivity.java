@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.ead.sparkpoint.R;
 import com.ead.sparkpoint.database.AppUserDAO;
 import com.ead.sparkpoint.models.AppUser;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.ead.sparkpoint.utils.TokenManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -165,6 +166,8 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
      * Clears local database and calls logout API
      */
     private void logoutUser() {
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Signing out..."));
         new Thread(() -> {
             try {
                 // Call logout API
@@ -172,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
                 tokenManager.logoutUser(); // This method already handles API call and local DB clearing
                 
                 runOnUiThread(() -> {
+                    loading.hide();
                     // The TokenManager.logoutUser() already redirects to LoginActivity
                     // So we don't need to do anything here
                 });
@@ -179,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    loading.hide();
                     // Even if API call fails, clear local data and redirect
                     AppUserDAO userDAO = new AppUserDAO(this);
                     userDAO.clearUsers();

@@ -17,6 +17,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.ead.sparkpoint.R;
+import com.ead.sparkpoint.utils.LoadingDialog;
 import com.ead.sparkpoint.utils.TokenManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -123,6 +124,8 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
 
     private void logoutUser() {
         // Perform logout in background and finish the activity when done
+        LoadingDialog loading = new LoadingDialog(this);
+        runOnUiThread(() -> loading.show("Signing out..."));
         new Thread(() -> {
             try {
                 TokenManager tokenManager = new TokenManager(this);
@@ -130,9 +133,12 @@ public class QRCodeActivity extends AppCompatActivity implements NavigationBarVi
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> {
+                    loading.hide();
                     finish();
                 });
+                return;
             }
+            runOnUiThread(loading::hide);
         }).start();
     }
 }
