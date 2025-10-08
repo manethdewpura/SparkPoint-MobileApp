@@ -8,52 +8,74 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
 
+    // Single background executor for network operations
+    private static final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
+
     // Common method to handle connections
     private static String sendRequest(String endpoint, String method, String jsonInput, String token) throws Exception {
-        URL url = new URL(Constants.BASE_URL + endpoint);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod(method);
-        conn.setRequestProperty("Accept", "application/json");
-
-        // If authenticated request, attach token
-        if (token != null && !token.isEmpty()) {
-            conn.setRequestProperty("Authorization", "Bearer " + token);
+        Callable<String> task = () -> executeRequest(endpoint, method, jsonInput, token);
+        Future<String> future = networkExecutor.submit(task);
+        try {
+            return future.get(15, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            future.cancel(true);
+            throw e;
         }
+    }
 
-        // If sending JSON (POST/PUT), set content-type and write body
-        if (jsonInput != null && (method.equals("POST") || method.equals("PUT") || method.equals("PATCH"))) {
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setDoOutput(true);
+    // Performs the actual network I/O on a background thread
+    private static String executeRequest(String endpoint, String method, String jsonInput, String token) throws Exception {
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(Constants.BASE_URL + endpoint);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod(method);
+            conn.setRequestProperty("Accept", "application/json");
 
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInput.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
+            if (token != null && !token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+
+            if (jsonInput != null && (method.equals("POST") || method.equals("PUT") || method.equals("PATCH"))) {
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setDoOutput(true);
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonInput.getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+            }
+
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            BufferedReader br;
+            int responseCode = conn.getResponseCode();
+            if (responseCode >= 200 && responseCode < 300) {
+                br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            } else {
+                br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+            }
+
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                response.append(line.trim());
+            }
+
+            return response.toString();
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
             }
         }
-
-
-        conn.setConnectTimeout(10000); // timeout safety
-        conn.setReadTimeout(10000);
-
-        // ✅ Handle success & error responses
-        BufferedReader br;
-        int responseCode = conn.getResponseCode(); // Get response code once
-        if (responseCode >= 200 && responseCode < 300) {
-            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-        } else {
-            br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
-        }
-
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            response.append(line.trim());
-        }
-
-        return response.toString();
     }
 
     // 🔹 GET request (no body)
