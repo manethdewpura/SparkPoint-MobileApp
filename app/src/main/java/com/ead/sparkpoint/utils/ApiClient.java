@@ -68,9 +68,7 @@ public class ApiClient {
             throw e;
         }
 
-        if (response.contains("Authentication required") ||
-                response.contains("expired") ||
-                response.contains("invalid")) {
+        if (response.contains("Authentication required") ) {
             token = tokenManager.refreshAccessToken();
             if (token != null) {
                 response = sendRequest(endpoint, "GET", null, token); // retry
