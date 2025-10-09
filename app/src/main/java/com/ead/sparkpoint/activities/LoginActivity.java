@@ -62,9 +62,10 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (res.has("message")) {
                     String msg = res.getString("message");
-                    runOnUiThread(() ->
-                            Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show()
-                    );
+                    runOnUiThread(() -> {
+                        loading.hide();
+                        Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show();
+                    });
                     return;
                 }
 
