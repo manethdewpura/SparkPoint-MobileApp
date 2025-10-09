@@ -10,10 +10,20 @@ import com.ead.sparkpoint.models.AppUser;
 public class AppUserDAO {
     private DBHelper dbHelper;
 
+    /**
+     * Constructor for the AppUserDAO.
+     * @param context The application context, used to initialize the DBHelper.
+     */
     public AppUserDAO(Context context) {
         dbHelper = new DBHelper(context);
     }
 
+    /**
+     * Inserts a new user or updates an existing user in the database.
+     * Uses CONFLICT_REPLACE to ensure that if a user with the same primary key (id) exists,
+     * it will be replaced with the new data.
+     * @param user The AppUser object containing the data to be saved.
+     */
     public void insertOrUpdateUser(AppUser user) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -31,9 +41,13 @@ public class AppUserDAO {
         values.put(DBHelper.COL_REFRESH_TOKEN, user.getRefreshToken());
 
         db.insertWithOnConflict(DBHelper.TABLE_USER, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-        // Do NOT close the database here
     }
 
+    /**
+     * Retrieves the single user stored in the database. This app is designed to only
+     * store one logged-in user's data at a time.
+     * @return An AppUser object if a user is found, otherwise null.
+     */
     public AppUser getUser() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String[] columns = {
@@ -47,6 +61,7 @@ public class AppUserDAO {
 
         AppUser user = null;
         if (cursor != null && cursor.moveToFirst()) {
+            // Construct the AppUser object from the data in the cursor.
             user = new AppUser(
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_ID)),
                     cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COL_USERNAME)),
@@ -63,12 +78,14 @@ public class AppUserDAO {
             );
         }
         if (cursor != null) {
-            cursor.close(); // Only close the cursor
+            cursor.close(); //close the cursor to release resources.
         }
-        // Do NOT close the database here
         return user;
     }
 
+    /**
+     * Deletes all records from the user table. This is typically used during logout.
+     */
     public void clearUsers() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.delete(DBHelper.TABLE_USER, null, null);

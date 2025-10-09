@@ -21,6 +21,12 @@ public class RegisterActivity extends AppCompatActivity {
     EditText etUsername, etEmail, etFirstName, etLastName, etPassword, etNic, etPhone;
     Button btnRegister;
 
+    /**
+     * Called when the activity is first created. Initializes the UI for the registration screen
+     * and sets up the listener for the register button.
+     * @param savedInstanceState If the activity is being re-initialized, this Bundle contains
+     * the most recent data, otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +44,11 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister.setOnClickListener(v -> registerEVOwner());
     }
 
+    /**
+     * Handles the EV owner registration process. It collects user input, performs client-side
+     * validation, and sends a registration request to the API. On success, it navigates
+     * the user to the Login screen.
+     */
     private void registerEVOwner() {
         String username = etUsername.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
@@ -47,9 +58,8 @@ public class RegisterActivity extends AppCompatActivity {
         String nic = etNic.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
 
-        // --- Client-Side Validation ---
+        // Perform client-side validation for all required fields.
         boolean isValid = true;
-        // Clear previous errors
         etUsername.setError(null);
         etEmail.setError(null);
         etPassword.setError(null);
@@ -84,7 +94,6 @@ public class RegisterActivity extends AppCompatActivity {
         if (!isValid) {
             return; // Stop if validation fails
         }
-        // --- End of Validation ---
 
         LoadingDialog loading = new LoadingDialog(this);
         runOnUiThread(() -> loading.show("Creating account..."));

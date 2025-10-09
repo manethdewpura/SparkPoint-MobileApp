@@ -9,14 +9,14 @@ public class AppUser {
     private String nic;
     private String accessToken;
     private String refreshToken;
-
-    // Add these missing fields
     private String firstName;
     private String lastName;
-    private String password; // Storing raw password in the model is generally not recommended for long term
+    private String password;
     private String phone;
 
-    // Constructor needs to be updated
+    /**
+     * Constructs a new AppUser object with all its properties.
+     */
     public AppUser(String id, String username, String email, Integer roleId, String roleName,
                    String firstName, String lastName, String password, String nic, String phone,
                    String accessToken, String refreshToken) {
@@ -99,7 +99,6 @@ public class AppUser {
         this.refreshToken = refreshToken;
     }
 
-    // --- Add Getters and Setters for the new fields ---
     public String getFirstName() {
         return firstName;
     }

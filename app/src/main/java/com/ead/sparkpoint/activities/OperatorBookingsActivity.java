@@ -46,6 +46,10 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
     private final List<JSONObject> bookings = new ArrayList<>();
     private BookingsAdapter adapter;
 
+    /**
+     * Initializes the activity, sets up the RecyclerView, bottom navigation,
+     * date picker, and loads bookings for the current day by default.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,16 +73,18 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         // Setup menu button
         setupMenuButton();
 
-// Load today's bookings by default
+        // Load today's bookings by default
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         tvFilterDate.setText("Bookings for " + today);
         btnPickDate.setOnClickListener(v -> openDatePicker(today));
-
-// Then fetch bookings
         fetchBookings(today);
 
     }
 
+    /**
+     * Opens a DatePickerDialog to allow the user to select a date for filtering bookings.
+     * @param current The current date string in "yyyy-MM-dd" format.
+     */
     private void openDatePicker(String current) {
         String[] parts = current.split("-");
         int year = Integer.parseInt(parts[0]);
@@ -94,6 +100,11 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         dpd.show();
     }
 
+    /**
+     * Fetches all bookings for the operator from the API, then filters them by the selected date.
+     * Updates the RecyclerView to display the filtered bookings.
+     * @param date The date string ("yyyy-MM-dd") to filter bookings by.
+     */
     private void fetchBookings(String date) {
         progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.GONE);
@@ -119,7 +130,6 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
                 try {
                     arr = new JSONArray(response);
                 } catch (Exception parseEx) {
-                    // Not an array; show error content briefly
                     runOnUiThread(() -> {
                         loading.hide();
                         tvEmpty.setText("Unexpected response");
@@ -128,6 +138,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
                     return;
                 }
 
+                // Filter the bookings by the selected date on the client-side.
                 List<JSONObject> filtered = new ArrayList<>();
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject obj = arr.getJSONObject(i);
@@ -160,6 +171,9 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         }).start();
     }
 
+    /**
+     * RecyclerView adapter for displaying a list of bookings.
+     */
     private class BookingsAdapter extends RecyclerView.Adapter<BookingsAdapter.VH> {
         private final List<JSONObject> data;
         BookingsAdapter(List<JSONObject> data) { this.data = data; }
@@ -197,6 +211,9 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         public int getItemCount() { return data.size(); }
     }
 
+    /**
+     * Handles item clicks in the bookings list. Opens the BookingDetailActivity for the selected booking.
+     */
     private void onItemClicked(int position) {
         if (position < 0 || position >= bookings.size()) return;
         JSONObject obj = bookings.get(position);
@@ -208,6 +225,11 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         }
     }
 
+    /**
+     * Handles navigation item selections in the bottom navigation bar.
+     * @param item The selected menu item.
+     * @return True to display the item as the selected item, false otherwise.
+     */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -217,7 +239,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
             finish();
             return true;
         } else if (itemId == R.id.nav_operator_bookings) {
-            // Already on bookings; consume the event to keep highlight
+            // Already on this bookings screen
             return true;
         } else if (itemId == R.id.nav_operator_profile) {
             startActivity(new android.content.Intent(this, ProfileActivity.class));
@@ -227,7 +249,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
     }
 
     /**
-     * Setup the menu button in the top app bar
+     * Sets up the top-right menu button and its click listener to show a popup menu for logout.
      */
     private void setupMenuButton() {
         ImageButton menuButton = findViewById(R.id.menuButton);
@@ -260,7 +282,7 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
     }
 
     /**
-     * Logout user from the app
+     * Logs the current user out of the application using the TokenManager.
      */
     private void logoutUser() {
         new Thread(() -> {
@@ -276,18 +298,22 @@ public class OperatorBookingsActivity extends AppCompatActivity implements Navig
         }).start();
     }
 
+    /**
+     * Called when the activity will start interacting with the user.
+     * Checks for token validity and performs a silent refresh if needed.
+     */
     @Override
     protected void onResume() {
         super.onResume();
 
-        // optional: verify token validity or silently refresh
+        // verify token validity or silently refresh
         new Thread(() -> {
             TokenManager tm = new TokenManager(this);
             String token = tm.getAccessToken();
             if (token == null || token.trim().isEmpty()) {
                 tm.logoutUser();
             } else {
-                // optional: silent refresh to ensure fresh token
+                // silent refresh to ensure fresh token
                 tm.refreshAccessToken();
             }
         }).start();

@@ -31,6 +31,10 @@ public class TokenManager {
         this.networkExecutor = Executors.newSingleThreadExecutor();
     }
 
+    /**
+     * Retrieves the current access token from the local database.
+     * @return The access token string, or null if no user is logged in.
+     */
     public String getAccessToken() {
         AppUser user = userDAO.getUser();
         return user != null ? user.getAccessToken() : null;
@@ -38,7 +42,7 @@ public class TokenManager {
 
     /**
      * Try to refresh the access token using the refresh token.
-     * If refresh fails -> logout user.
+     * If refresh fails logout user.
      */
     public String refreshAccessToken() {
         AppUser user = userDAO.getUser();
@@ -112,7 +116,6 @@ public class TokenManager {
 
     /**
      * Helper method to make a synchronous POST request.
-     * NOTE: This should not be run on the main UI thread in a production app.
      * @param urlString The URL for the request.
      * @param jsonInputString The JSON body for the request.
      * @return The response from the server as a String, or null if it fails.

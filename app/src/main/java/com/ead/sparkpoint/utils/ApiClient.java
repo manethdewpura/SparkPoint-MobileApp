@@ -19,19 +19,22 @@ public class ApiClient {
     // Single background executor for network operations
     private static final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
 
-    // Common method to handle connections
+    // A generic method to submit a network task to the executor and wait for its result.
     private static String sendRequest(String endpoint, String method, String jsonInput, String token) throws Exception {
         Callable<String> task = () -> executeRequest(endpoint, method, jsonInput, token);
         Future<String> future = networkExecutor.submit(task);
         try {
+            // Wait for a maximum of 15 seconds for the request to complete.
             return future.get(15, TimeUnit.SECONDS);
         } catch (Exception e) {
-            future.cancel(true);
+            future.cancel(true);// Attempt to cancel the task if it times out.
             throw e;
         }
     }
 
-    // Performs the actual network I/O on a background thread
+    /**
+     * Performs the actual network I/O. This method should only be called from a background thread.
+     */
     private static String executeRequest(String endpoint, String method, String jsonInput, String token) throws Exception {
         HttpURLConnection conn = null;
         try {
@@ -40,10 +43,12 @@ public class ApiClient {
             conn.setRequestMethod(method);
             conn.setRequestProperty("Accept", "application/json");
 
+            // Add the Authorization header if a token is provided.
             if (token != null && !token.isEmpty()) {
                 conn.setRequestProperty("Authorization", "Bearer " + token);
             }
 
+            // Write the JSON body for POST, PUT, and PATCH requests.
             if (jsonInput != null && (method.equals("POST") || method.equals("PUT") || method.equals("PATCH"))) {
                 conn.setRequestProperty("Content-Type", "application/json; utf-8");
                 conn.setDoOutput(true);
@@ -56,6 +61,7 @@ public class ApiClient {
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(10000);
 
+            // Read the response from either the input stream (for success) or error stream (for failure).
             BufferedReader br;
             int responseCode = conn.getResponseCode();
             if (responseCode >= 200 && responseCode < 300) {
@@ -78,7 +84,9 @@ public class ApiClient {
         }
     }
 
-    // 🔹 GET request (no body)
+    /**
+     * Performs an HTTP GET request with automatic token refresh.
+     */
     public static String getRequest(Context context, String endpoint) throws Exception {
         TokenManager tokenManager = new TokenManager(context);
         String token =  tokenManager.getAccessToken();
@@ -90,6 +98,7 @@ public class ApiClient {
             throw e;
         }
 
+        // If the initial request fails due to authentication, try refreshing the token and retry.
         if (response.contains("Authentication required") ) {
             token = tokenManager.refreshAccessToken();
             if (token != null) {
@@ -102,7 +111,9 @@ public class ApiClient {
         return response;
     }
 
-    // 🔹 POST request (with auto refresh)
+    /**
+     * Performs an HTTP POST request with automatic token refresh.
+     */
     public static String postRequest(Context context, String endpoint, String jsonInput) throws Exception {
         TokenManager tokenManager = new TokenManager(context);
         String token = tokenManager.getAccessToken();
@@ -124,7 +135,9 @@ public class ApiClient {
         return response;
     }
 
-    // 🔹 PUT request (with auto refresh)
+    /**
+     * Performs an HTTP PUT request with automatic token refresh.
+     */
     public static String putRequest(Context context, String endpoint, String jsonInput) throws Exception {
         TokenManager tokenManager = new TokenManager(context);
         String token = tokenManager.getAccessToken();
@@ -146,7 +159,9 @@ public class ApiClient {
         return response;
     }
 
-    // 🔹 PATCH request (with auto refresh)
+    /**
+     * Performs an HTTP PATCH request with automatic token refresh.
+     */
     public static String patchRequest(Context context, String endpoint, String jsonInput) throws Exception {
         TokenManager tokenManager = new TokenManager(context);
         String token = tokenManager.getAccessToken();
@@ -168,7 +183,9 @@ public class ApiClient {
         return response;
     }
 
-    // 🔹 DELETE request (with auto refresh)
+    /**
+     * Performs an HTTP DELETE request with automatic token refresh.
+     */
     public static String deleteRequest(Context context, String endpoint) throws Exception {
         TokenManager tokenManager = new TokenManager(context);
         String token = tokenManager.getAccessToken();

@@ -24,6 +24,10 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     AppUserDAO appUserDAO;
 
+    /**
+     * * Called when the activity is first created. Initializes the UI for the login screen,
+     * sets up listeners for the login button and sign-up text.
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +49,11 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Handles the user login process and retrieves credentials from the input fields,
+     * sends a login request to the API, and if success, saves user data locally and
+     * navigates to the appropriate home screen based on the user's role.
+     */
     private void loginUser() {
         String username = etUsername.getText().toString();
         String password = etPassword.getText().toString();
@@ -57,9 +66,9 @@ public class LoginActivity extends AppCompatActivity {
                 req.put("Password", password);
 
                 String response = ApiClient.postRequest(LoginActivity.this, Constants.LOGIN_URL, req.toString());
-
                 JSONObject res = new JSONObject(response);
 
+                // Handle cases where the API returns an error message.
                 if (res.has("message")) {
                     String msg = res.getString("message");
                     runOnUiThread(() -> {
@@ -71,13 +80,13 @@ public class LoginActivity extends AppCompatActivity {
 
                 JSONObject userJson = res.getJSONObject("user");
 
+                // Create a new AppUser object from the API response.
                 AppUser appUser = new AppUser(
                         userJson.getString("id"),
                         userJson.getString("username"),
                         userJson.getString("email"),
                         userJson.getInt("roleId"),
                         userJson.getString("roleName"),
-                        // Ensure these fields are in your userJson from the login API
                         userJson.has("firstName") ? userJson.getString("firstName") : null,
                         userJson.has("lastName") ? userJson.getString("lastName") : null,
                         userJson.has("password") ? userJson.getString("password") : null,
@@ -87,6 +96,7 @@ public class LoginActivity extends AppCompatActivity {
                         res.getString("refreshToken")
                 );
 
+                // Clear any existing user data and save the new user to the local database.
                 appUserDAO.clearUsers();
                 appUserDAO.insertOrUpdateUser(appUser);
 
@@ -94,12 +104,13 @@ public class LoginActivity extends AppCompatActivity {
                     loading.hide();
                     Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
 
-                    Integer roleId = appUser.getRoleId();
+                    // Redirect user based on their role ID.
 
-                    if (roleId != null) {
+                    Integer roleId = appUser.getRoleId();
+                    if (roleId != null) {//EV Owner
                         if (roleId == 3) {
                             startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        } else if (roleId == 2) {
+                        } else if (roleId == 2) {//Station Operator
                             startActivity(new Intent(LoginActivity.this, OperatorHomeActivity.class));
                         } else {
                             Toast.makeText(LoginActivity.this, "Unknown user role ID: " + roleId, Toast.LENGTH_LONG).show();
