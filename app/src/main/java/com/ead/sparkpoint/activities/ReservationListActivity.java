@@ -258,7 +258,9 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
                 try {
                     JSONObject res = new JSONObject(response);
                     if (res.has("message")) message = res.getString("message");
-                } catch (Exception ignored) {}
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 String finalMessage = message;
                 runOnUiThread(() -> {
