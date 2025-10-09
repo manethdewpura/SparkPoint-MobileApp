@@ -1,8 +1,6 @@
 package com.ead.sparkpoint.utils;
-
 import android.content.Context;
 import android.content.Intent;
-import android.os.StrictMode; // Required for synchronous network calls (not recommended for production)
 
 import com.ead.sparkpoint.activities.LoginActivity;
 import com.ead.sparkpoint.database.AppUserDAO;
@@ -16,20 +14,27 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class TokenManager {
     private final Context context;
     private final AppUserDAO userDAO;
+    private final ExecutorService networkExecutor;
 
     public TokenManager(Context context) {
         this.context = context;
         this.userDAO = new AppUserDAO(context);
-        // WARNING: This is for demonstration to fix the compilation error.
-        // In a real app, network calls must be on a background thread.
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+        this.networkExecutor = Executors.newSingleThreadExecutor();
     }
 
+    /**
+     * Retrieves the current access token from the local database.
+     * @return The access token string, or null if no user is logged in.
+     */
     public String getAccessToken() {
         AppUser user = userDAO.getUser();
         return user != null ? user.getAccessToken() : null;
@@ -37,7 +42,7 @@ public class TokenManager {
 
     /**
      * Try to refresh the access token using the refresh token.
-     * If refresh fails -> logout user.
+     * If refresh fails logout user.
      */
     public String refreshAccessToken() {
         AppUser user = userDAO.getUser();
@@ -111,12 +116,24 @@ public class TokenManager {
 
     /**
      * Helper method to make a synchronous POST request.
-     * NOTE: This should not be run on the main UI thread in a production app.
      * @param urlString The URL for the request.
      * @param jsonInputString The JSON body for the request.
      * @return The response from the server as a String, or null if it fails.
      */
     private String makePostRequest(String urlString, String jsonInputString) {
+        Callable<String> task = () -> executeHttpPost(urlString, jsonInputString);
+        Future<String> future = networkExecutor.submit(task);
+        try {
+            // Allow a bounded wait to avoid indefinite blocking
+            return future.get(12, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            future.cancel(true);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String executeHttpPost(String urlString, String jsonInputString) {
         HttpURLConnection conn = null;
         try {
             URL url = new URL(Constants.BASE_URL + urlString);
@@ -146,7 +163,6 @@ public class TokenManager {
             } else {
                 return null;
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             return null;

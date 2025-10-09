@@ -33,12 +33,13 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
     String bookingId;
     JSONObject bookingJson;
 
+//    Called when the activity is first created.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking_detail);
 
-        // Initialize UI
+        // Initialize UI components by finding them in the layout
         tvBookingId = findViewById(R.id.tvBookingId);
         tvOwnerNIC = findViewById(R.id.tvOwnerNIC);
         tvStationName = findViewById(R.id.tvStationName);
@@ -47,12 +48,13 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
         btnStart = findViewById(R.id.btnStart);
         btnComplete = findViewById(R.id.btnComplete);
 
+        //Retrieve the booking ID passed from the previous activity.
         bookingId = getIntent().getStringExtra("bookingId");
-
         appUser = new AppUserDAO(this).getUser();
 
         loadBookingDetails();
 
+        // Set listeners for the start and complete buttons to update the booking status.
         btnStart.setOnClickListener(v -> updateBookingStatus("In Progress"));
         btnComplete.setOnClickListener(v -> updateBookingStatus("Completed"));
 
@@ -64,6 +66,10 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
         }
     }
 
+    /**
+     * Fetches the booking details from the API in a background thread.
+     * Once fetched, it updates the UI on the main thread.
+     */
     private void loadBookingDetails() {
         LoadingDialog loading = new LoadingDialog(this);
         runOnUiThread(() -> loading.show("Loading booking..."));
@@ -72,10 +78,11 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
                 String response = ApiClient.getRequest(BookingDetailActivity.this, Constants.GET_BOOKING_BY_ID_URL + bookingId);
                 bookingJson = new JSONObject(response);
 
+                // Update UI elements on the main thread after the network request is complete.
                 runOnUiThread(() -> {
                     loading.hide();
                     try {
-                        // Populate fields
+                        // Populate UI fields with data from the JSON response.
                         tvBookingId.setText(bookingJson.optString("id"));
                         tvOwnerNIC.setText(bookingJson.optString("ownerNIC"));
                         if (bookingJson.has("station")) {
@@ -86,7 +93,7 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
                         chipStatus.setText(statusText);
                         styleStatusChip(statusText);
 
-                        // Handle button visibility based on status
+                        // Handle button visibility of action buttons based on current status
                         String status = bookingJson.optString("status", "");
 
                         if ("Confirmed".equalsIgnoreCase(status)) {
@@ -96,7 +103,6 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
                             btnStart.setVisibility(View.GONE);
                             btnComplete.setVisibility(View.VISIBLE);
                         } else {
-                            // Completed, Cancelled, or any other status
                             btnStart.setVisibility(View.GONE);
                             btnComplete.setVisibility(View.GONE);
                         }
@@ -117,6 +123,9 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
         }).start();
     }
 
+    /**
+     * Updates the status of the current booking by sending a PATCH request to the API.
+     */
     private void updateBookingStatus(String newStatus) {
         LoadingDialog loading = new LoadingDialog(this);
         runOnUiThread(() -> loading.show("Updating booking..."));
@@ -130,10 +139,11 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
 
                 String response = ApiClient.patchRequest(BookingDetailActivity.this, Constants.UPDATE_BOOKING_STATUS_URL + bookingId, req.toString());
 
+                // After updating, show a confirmation and refresh the booking details.
                 runOnUiThread(() -> {
                     loading.hide();
                     Toast.makeText(this, response, Toast.LENGTH_SHORT).show();
-                    loadBookingDetails(); // refresh
+                    loadBookingDetails(); // refresh the view with the latest data
                 });
 
             } catch (Exception e) {
@@ -146,6 +156,9 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
         }).start();
     }
 
+    /**
+     * Styles the status chip with a specific background color based on the booking status.
+     */
     private void styleStatusChip(String status) {
         int bgColor;
         if ("Confirmed".equalsIgnoreCase(status)) {
@@ -164,6 +177,11 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
         chipStatus.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(bgColor));
     }
 
+    /**
+     * Handles navigation item selections in the bottom navigation bar.
+     * @param item The selected menu item.
+     * @return True to display the item as the selected item, false otherwise.
+     */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -171,7 +189,7 @@ public class BookingDetailActivity extends AppCompatActivity implements Navigati
             startActivity(new android.content.Intent(this, OperatorHomeActivity.class));
             return true;
         } else if (itemId == R.id.nav_operator_bookings) {
-            // Stay on bookings-related screen
+            // Stay on this bookings screen
             return true;
         } else if (itemId == R.id.nav_operator_profile) {
             startActivity(new android.content.Intent(this, ProfileActivity.class));

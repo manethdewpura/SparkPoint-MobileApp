@@ -2,6 +2,7 @@ package com.ead.sparkpoint.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,6 +21,12 @@ public class RegisterActivity extends AppCompatActivity {
     EditText etUsername, etEmail, etFirstName, etLastName, etPassword, etNic, etPhone;
     Button btnRegister;
 
+    /**
+     * Called when the activity is first created. Initializes the UI for the registration screen
+     * and sets up the listener for the register button.
+     * @param savedInstanceState If the activity is being re-initialized, this Bundle contains
+     * the most recent data, otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,14 +44,57 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister.setOnClickListener(v -> registerEVOwner());
     }
 
+    /**
+     * Handles the EV owner registration process. It collects user input, performs client-side
+     * validation, and sends a registration request to the API. On success, it navigates
+     * the user to the Login screen.
+     */
     private void registerEVOwner() {
-        String username = etUsername.getText().toString();
-        String email = etEmail.getText().toString();
-        String firstName = etFirstName.getText().toString();
-        String lastName = etLastName.getText().toString();
+        String username = etUsername.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String firstName = etFirstName.getText().toString().trim();
+        String lastName = etLastName.getText().toString().trim();
         String password = etPassword.getText().toString();
-        String nic = etNic.getText().toString();
-        String phone = etPhone.getText().toString();
+        String nic = etNic.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+
+        // Perform client-side validation for all required fields.
+        boolean isValid = true;
+        etUsername.setError(null);
+        etEmail.setError(null);
+        etPassword.setError(null);
+        etNic.setError(null);
+        etPhone.setError(null);
+
+        if (username.isEmpty()) {
+            etUsername.setError("Username is required");
+            isValid = false;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError(Html.fromHtml("<font color='#ff7600'>Invalid email format</font>"));
+            isValid = false;
+        }
+
+        if (password.isEmpty()) {
+            etPassword.setError(Html.fromHtml("<font color='#ff7600'>Password is required</font>"));
+            isValid = false;
+        }
+
+        if (nic.isEmpty()) {
+            etNic.setError(Html.fromHtml("<font color='#ff7600'>NIC is required</font>"));
+            isValid = false;
+        }
+
+        if (phone.length() > 10) {
+            etPhone.setError(Html.fromHtml("<font color='#ff7600'>Phone number cannot exceed 10 digits</font>"));
+            isValid = false;
+        }
+
+        if (!isValid) {
+            return; // Stop if validation fails
+        }
+
         LoadingDialog loading = new LoadingDialog(this);
         runOnUiThread(() -> loading.show("Creating account..."));
         new Thread(() -> {

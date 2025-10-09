@@ -24,6 +24,10 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     AppUserDAO appUserDAO;
 
+    /**
+     * * Called when the activity is first created. Initializes the UI for the login screen,
+     * sets up listeners for the login button and sign-up text.
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +49,11 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Handles the user login process and retrieves credentials from the input fields,
+     * sends a login request to the API, and if success, saves user data locally and
+     * navigates to the appropriate home screen based on the user's role.
+     */
     private void loginUser() {
         String username = etUsername.getText().toString();
         String password = etPassword.getText().toString();
@@ -57,36 +66,37 @@ public class LoginActivity extends AppCompatActivity {
                 req.put("Password", password);
 
                 String response = ApiClient.postRequest(LoginActivity.this, Constants.LOGIN_URL, req.toString());
-
                 JSONObject res = new JSONObject(response);
 
-                // ✅ Check if backend only sent a message (e.g., deactivated account)
+                // Handle cases where the API returns an error message.
                 if (res.has("message")) {
                     String msg = res.getString("message");
-                    runOnUiThread(() ->
-                            Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show()
-                    );
-                    return; // ⛔ Stop here, don't try to parse "user"
+                    runOnUiThread(() -> {
+                        loading.hide();
+                        Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show();
+                    });
+                    return;
                 }
 
                 JSONObject userJson = res.getJSONObject("user");
 
+                // Create a new AppUser object from the API response.
                 AppUser appUser = new AppUser(
                         userJson.getString("id"),
                         userJson.getString("username"),
                         userJson.getString("email"),
                         userJson.getInt("roleId"),
                         userJson.getString("roleName"),
-                        // Ensure these fields are in your userJson from the login API
                         userJson.has("firstName") ? userJson.getString("firstName") : null,
                         userJson.has("lastName") ? userJson.getString("lastName") : null,
-                        userJson.has("password") ? userJson.getString("password") : null, // Or handle appropriately
+                        userJson.has("password") ? userJson.getString("password") : null,
                         userJson.has("nic") ? userJson.getString("nic") : null,
                         userJson.has("phone") ? userJson.getString("phone") : null,
                         res.getString("accessToken"),
                         res.getString("refreshToken")
                 );
 
+                // Clear any existing user data and save the new user to the local database.
                 appUserDAO.clearUsers();
                 appUserDAO.insertOrUpdateUser(appUser);
 
@@ -94,20 +104,18 @@ public class LoginActivity extends AppCompatActivity {
                     loading.hide();
                     Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
 
-                    Integer roleId = appUser.getRoleId(); // Get the role ID
+                    // Redirect user based on their role ID.
 
-                    if (roleId != null) { // Always good to check for null
-                        if (roleId == 3) { // 3 for EV Owner
-                            // Redirect to MainActivity for EV Owners to use the navigation system
+                    Integer roleId = appUser.getRoleId();
+                    if (roleId != null) {//EV Owner
+                        if (roleId == 3) {
                             startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        } else if (roleId == 2) { // 2 for Station Operator
+                        } else if (roleId == 2) {//Station Operator
                             startActivity(new Intent(LoginActivity.this, OperatorHomeActivity.class));
                         } else {
-                            // Optional: Handle cases where roleId is neither 2 nor 3
                             Toast.makeText(LoginActivity.this, "Unknown user role ID: " + roleId, Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        // Optional: Handle cases where roleId is null (if possible from your API)
                         Toast.makeText(LoginActivity.this, "User role ID is missing.", Toast.LENGTH_LONG).show();
                     }
                     finish();

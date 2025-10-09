@@ -1,6 +1,7 @@
 package com.ead.sparkpoint.activities;
 
 import android.os.Bundle;
+import android.text.Html;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.Button;
@@ -38,6 +39,11 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
     AppUserDAO appUserDAO;
     AppUser appUser;
 
+    /**
+     * Initializes the profile activity. It populates user data, sets up UI components,
+     * and adjusts the view based on the user's role (EV Owner vs. Station Operator).
+     * @param savedInstanceState State data for activity re-creation.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +62,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         Button btnDeactivate = findViewById(R.id.btnDeactivate);
         btnDeactivate.setOnClickListener(v -> showDeactivateDialog());
 
-        // Setup bottom navigation (EV Owner menu by default). If operator, we switch menu.
+        // Dynamically set the bottom navigation menu based on user role.
         BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
         AppUserDAO daoForRole = new AppUserDAO(this);
         AppUser roleUser = daoForRole.getUser();
@@ -75,7 +81,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         appUserDAO = new AppUserDAO(this);
         appUser = appUserDAO.getUser(); // load from local db
 
-        // Fill data
+        // Populate fields with user data.
         if (appUser != null) {
             etUsername.setText(appUser.getUsername());
             etEmail.setText(appUser.getEmail());
@@ -86,11 +92,11 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             etPhone.setText(appUser.getPhone());
         }
 
-        // Default: fields are read-only until user taps Edit
+        // Customize UI for Station Operators (hide sensitive fields and action buttons)
         boolean isOperator = roleUser != null && Integer.valueOf(2).equals(roleUser.getRoleId());
-        setEditable(false);
+        setEditable(false);// fields are read-only until user taps Edit
         if (isOperator) {
-            // disable inputs explicitly for safety
+            // disable inputs
             etUsername.setEnabled(false);
             etEmail.setEnabled(false);
             etFirstName.setEnabled(false);
@@ -119,33 +125,59 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
         btnSave.setOnClickListener(v -> {
             updateProfile();
-            btnEdit.setVisibility(android.view.View.VISIBLE);
-            btnSave.setVisibility(android.view.View.GONE);
         });
 
     }
 
+    /**
+     * Toggles the editable state of the profile input fields.
+     * @param enabled True to make fields editable, false to make them read-only.
+     */
     private void setEditable(boolean enabled) {
         etUsername.setEnabled(enabled);
         etEmail.setEnabled(enabled);
         etFirstName.setEnabled(enabled);
         etLastName.setEnabled(enabled);
         etPassword.setEnabled(enabled);
-        // NIC should not be editable (PK)
+        // NIC should not be editable as it is the primary key
         etNic.setEnabled(false);
         etPhone.setEnabled(enabled);
 
         btnSave.setEnabled(enabled);
     }
 
+    /**
+     * Gathers data from input fields, validates it, and sends an API request to update the user's profile.
+     * On success, it also updates the local database.
+     */
     private void updateProfile() {
         String username = etUsername.getText().toString();
-        String email = etEmail.getText().toString();
+        String email = etEmail.getText().toString().trim();
         String firstName = etFirstName.getText().toString();
         String lastName = etLastName.getText().toString();
         String password = etPassword.getText().toString();
         String nic = etNic.getText().toString();
-        String phone = etPhone.getText().toString();
+        String phone = etPhone.getText().toString().trim();
+
+        //Perform client-side validation.
+        boolean isValid = true;
+        etEmail.setError(null);
+        etPhone.setError(null);
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError(Html.fromHtml("<font color='#ff7600'>Invalid email format</font>"));
+            isValid = false;
+        }
+
+        if (phone.length() > 10) {
+            etPhone.setError(Html.fromHtml("<font color='#ff7600'>Phone number cannot exceed 10 digits</font>"));
+            isValid = false;
+        }
+
+        if (!isValid) {
+            return; // Stop if validation fails
+        }
+
         LoadingDialog loading = new LoadingDialog(this);
         runOnUiThread(() -> loading.show("Saving changes..."));
         new Thread(() -> {
@@ -178,8 +210,11 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                     appUser.setNic(nic);
                     appUser.setPhone(phone);
 
+                    // Revert UI to view mode.
                     appUserDAO.insertOrUpdateUser(appUser);
                     setEditable(false);
+                    btnEdit.setVisibility(android.view.View.VISIBLE);
+                    btnSave.setVisibility(android.view.View.GONE);
                 });
 
             } catch (Exception e) {
@@ -192,6 +227,9 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         }).start();
     }
 
+    /**
+     * Displays a confirmation dialog for account deactivation. The user must enter their NIC to confirm.
+     */
     private void showDeactivateDialog() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
         builder.setTitle("Deactivate Account");
@@ -199,14 +237,13 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
 
         // Create TextInputLayout
         TextInputLayout textInputLayout = new TextInputLayout(this);
-        textInputLayout.setHint("Enter NIC"); // set the hint on the layout
+        textInputLayout.setHint("Enter NIC");
 
         // Create TextInputEditText correctly inside the layout
         TextInputEditText nicInput = new TextInputEditText(textInputLayout.getContext());
         nicInput.setInputType(InputType.TYPE_CLASS_TEXT); // optional
         textInputLayout.addView(nicInput);
 
-        // Apply padding
         int paddingPx = (int) (16 * getResources().getDisplayMetrics().density);
         textInputLayout.setPadding(paddingPx, paddingPx, paddingPx, 0);
 
@@ -225,8 +262,9 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         builder.show();
     }
 
-
-
+    /**
+     * Sends an API request to deactivate the user's account. On success, clears local data and redirects to login.
+     */
     private void deactivateAccount() {
         LoadingDialog loading = new LoadingDialog(this);
         runOnUiThread(() -> loading.show("Deactivating account..."));
@@ -261,12 +299,17 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
         }).start();
     }
 
+    /**
+     * Handles item selections from the bottom navigation bar, navigating to the correct screen.
+     * @param item The menu item that was selected.
+     * @return boolean True to display the item as the selected item.
+     */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
 
         if (itemId == R.id.nav_profile || itemId == R.id.nav_operator_profile) {
-            // Already on profile; consume the event to keep highlight
+            // Already on profile screen and consume the event to keep highlight
             return true;
         } else if (itemId == R.id.nav_home || itemId == R.id.nav_operator_home) {
             Intent homeIntent = new Intent(this, DashboardActivity.class);
@@ -287,7 +330,7 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
     }
 
     /**
-     * Setup the menu button in the top app bar
+     * Sets up the top-right menu button to show a popup menu for logging out.
      */
     private void setupMenuButton() {
         ImageButton menuButton = findViewById(R.id.menuButton);
@@ -308,7 +351,8 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
                 popup.setOnMenuItemClickListener(item -> {
                     int itemId = item.getItemId();
                     if (itemId == R.id.menu_logout) {
-                        logoutUser();
+                        // Handle logout
+                        new TokenManager(this).logoutUser();
                         return true;
                     }
                     return false;
@@ -318,23 +362,4 @@ public class ProfileActivity extends AppCompatActivity implements NavigationBarV
             });
         }
     }
-
-    /**
-     * Logout user from the app
-     */
-    private void logoutUser() {
-        new Thread(() -> {
-            try {
-                TokenManager tokenManager = new TokenManager(this);
-                tokenManager.logoutUser();
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() -> {
-                    finish();
-                });
-            }
-        }).start();
-    }
-
-
 }

@@ -25,6 +25,11 @@ public class OperatorHomeActivity extends AppCompatActivity implements Navigatio
     TextView tvWelcomeOperator, tvOperatorEmail;
     Button btnScanQR;
 
+    /**
+     * Called when the activity is first created. Sets up the operator home screen,
+     * displays a welcome message with user data, and initializes navigation.
+     * @param savedInstanceState State data for activity re-creation.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +39,7 @@ public class OperatorHomeActivity extends AppCompatActivity implements Navigatio
         tvOperatorEmail = findViewById(R.id.tvOperatorEmail);
         View btnScanQR = findViewById(R.id.btnScanQR);
 
+        // Load user data from the local database to display.
         AppUserDAO dao = new AppUserDAO(this);
         AppUser user = dao.getUser();
 
@@ -53,11 +59,14 @@ public class OperatorHomeActivity extends AppCompatActivity implements Navigatio
         setupMenuButton();
     }
 
+    /**
+     * Handles item selections from the bottom navigation bar.
+     */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.nav_operator_home) {
-            // Already on home; consume the event to keep highlight
+            // Already on home screen
             return true;
         } else if (itemId == R.id.nav_operator_bookings) {
             startActivity(new Intent(this, OperatorBookingsActivity.class));
@@ -70,7 +79,7 @@ public class OperatorHomeActivity extends AppCompatActivity implements Navigatio
     }
 
     /**
-     * Setup the menu button in the top app bar
+     * Sets up the top-right menu button to show a popup menu for logging out.
      */
     private void setupMenuButton() {
         ImageButton menuButton = findViewById(R.id.menuButton);
@@ -103,7 +112,7 @@ public class OperatorHomeActivity extends AppCompatActivity implements Navigatio
     }
 
     /**
-     * Logout user from the app
+     * Logs the current user out of the application and clears session data.
      */
     private void logoutUser() {
         LoadingDialog loading = new LoadingDialog(this);
