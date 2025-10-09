@@ -450,11 +450,19 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 body.put("reservationTime", slot );
                 body.put("slotsRequested", Noslots);
 
-                ApiClient.postRequest(ReservationActivity.this, Constants.CREATE_BOOKINGS_URL, body.toString());
+                String response = ApiClient.postRequest(ReservationActivity.this, Constants.CREATE_BOOKINGS_URL, body.toString());
+                String message = "Booking Successful!";
+                try {
+                    JSONObject res = new JSONObject(response);
+                    if (res.has("message")) message = res.getString("message");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
+                String finalMessage = message;
                 runOnUiThread(() -> {
                     loading.hide();
-                    Toast.makeText(this, "Booking Successful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, finalMessage, Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     startActivity(new Intent(this, ReservationListActivity.class));
                     finish();
@@ -481,11 +489,19 @@ public class ReservationActivity extends AppCompatActivity implements Navigation
                 body.put("slotsRequested", Noslots);
 
                 String url = Constants.UPDATE_BOOKINGS_URL.replace("{bookingid}", bookingId);
-                ApiClient.patchRequest(ReservationActivity.this, url, body.toString());
+                String response = ApiClient.patchRequest(ReservationActivity.this, url, body.toString());
+                String message = "Booking Updated Successfully!";
+                try {
+                    JSONObject res = new JSONObject(response);
+                    if (res.has("message")) message = res.getString("message");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
+                String finalMessage = message;
                 runOnUiThread(() -> {
                     loading.hide();
-                    Toast.makeText(this, "Booking Updated Successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, finalMessage, Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     startActivity(new Intent(this, ReservationListActivity.class));
                     finish();

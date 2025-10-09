@@ -93,22 +93,6 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
             @Override
             public void onUpdate(Reservation reservation) {
-                // Enforce 12-hour rule before allowing update
-                try {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
-                    long reservationMillis = sdf.parse(reservation.getReservationTime()).getTime();
-                    long nowMillis = System.currentTimeMillis();
-                    long diffHours = (reservationMillis - nowMillis) / (1000 * 60 * 60);
-                    if (diffHours < 12) {
-                        Toast.makeText(ReservationListActivity.this,
-                                "Reservation can only be updated at least 12 hours before.",
-                                Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
                 // Launch ReservationActivity in update mode
                 Intent intent = new Intent(ReservationListActivity.this, ReservationActivity.class);
                 intent.putExtra("mode", "update");
@@ -122,48 +106,29 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
             @Override
             public void onDelete(Reservation reservation) {
-                // Calculate if reservation is at least 12 hours ahead
-                try {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
-                    long reservationMillis = sdf.parse(reservation.getReservationTime()).getTime();
-                    long nowMillis = System.currentTimeMillis();
-                    long diffHours = (reservationMillis - nowMillis) / (1000 * 60 * 60);
+                // Show confirmation dialog for cancellation
+                AlertDialog.Builder builder = new AlertDialog.Builder(ReservationListActivity.this);
+                View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_reservation, null);
+                builder.setView(dialogView);
 
-                    if (diffHours < 12) {
-                        Toast.makeText(ReservationListActivity.this,
-                                "Reservation can only be cancelled at least 12 hours before.",
-                                Toast.LENGTH_LONG).show();
-                        return;
-                    }
+                TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
+                Button btnCancel = dialogView.findViewById(R.id.btnDialogCancel);
+                Button btnConfirm = dialogView.findViewById(R.id.btnDialogConfirm);
 
-                    // Inflate custom layout
-                    AlertDialog.Builder builder = new AlertDialog.Builder(ReservationListActivity.this);
-                    View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_reservation, null);
-                    builder.setView(dialogView);
+                tvMessage.setText("Do you want to cancel the following booking?\n\n" +
+                        "Station: " + reservation.getStationName() + "\n" +
+                        "Date & Time: " + reservation.getReservationTime() + "\n" +
+                        "Slot: " + reservation.getReservationSlot());
 
-                    TextView tvMessage = dialogView.findViewById(R.id.tvDialogMessage);
-                    Button btnCancel = dialogView.findViewById(R.id.btnDialogCancel);
-                    Button btnConfirm = dialogView.findViewById(R.id.btnDialogConfirm);
+                AlertDialog dialog = builder.create();
 
-                    tvMessage.setText("Do you want to cancel the following booking?\n\n" +
-                            "Station: " + reservation.getStationName() + "\n" +
-                            "Date & Time: " + reservation.getReservationTime() + "\n" +
-                            "Slot: " + reservation.getReservationSlot());
+                btnCancel.setOnClickListener(v -> dialog.dismiss());
+                btnConfirm.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    cancelReservation(reservation.getId());
+                });
 
-                    AlertDialog dialog = builder.create();
-
-                    btnCancel.setOnClickListener(v -> dialog.dismiss());
-                    btnConfirm.setOnClickListener(v -> {
-                        dialog.dismiss();
-                        cancelReservation(reservation.getId());
-                    });
-
-                    dialog.show();
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(ReservationListActivity.this, "Invalid reservation time", Toast.LENGTH_SHORT).show();
-                }
+                dialog.show();
             }
         });
         recyclerReservations.setAdapter(adapter);
@@ -289,10 +254,18 @@ public class ReservationListActivity extends AppCompatActivity implements Naviga
 
                 String url = Constants.DELETE_BOOKINGS_URL.replace("{bookingid}", bookingId);
                 String response = ApiClient.patchRequest(ReservationListActivity.this, url, body.toString());
+                String message = "Reservation cancelled";
+                try {
+                    JSONObject res = new JSONObject(response);
+                    if (res.has("message")) message = res.getString("message");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
+                String finalMessage = message;
                 runOnUiThread(() -> {
                     loading.hide();
-                    Toast.makeText(this, "Reservation Cancelled!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, finalMessage, Toast.LENGTH_SHORT).show();
                     loadReservations(Constants.GET_BOOKINGS_URL); // refresh list
                 });
             } catch (Exception e) {
