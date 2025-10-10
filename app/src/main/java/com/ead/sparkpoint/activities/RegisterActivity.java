@@ -86,6 +86,10 @@ public class RegisterActivity extends AppCompatActivity {
             isValid = false;
         }
 
+        if (nic.length() != 12) {
+            etNic.setError(Html.fromHtml("<font color='#ff7600'>NIC number should be 12 digits</font>"));
+            isValid = false;
+        }
         if (phone.length() > 10) {
             etPhone.setError(Html.fromHtml("<font color='#ff7600'>Phone number cannot exceed 10 digits</font>"));
             isValid = false;
